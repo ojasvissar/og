@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Ojasv Issar — ML Engineer</title>
+<title>Ojasv Issar — Data Scientist</title>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,300;1,9..144,700;1,9..144,900&family=Caveat:wght@400;600;700&family=DM+Mono:wght@300;400;500&family=Bebas+Neue&display=swap" rel="stylesheet"/>
 <style>
 :root {
@@ -33,32 +33,73 @@
 body.dark {
   --cream:  #111009;
   --cream2: #1c1a15;
-  --cream3: #242118;
+  --cream3: #2a271f;
   --ink:    #f0ece2;
-  --ink2:   #b8b2a6;
-  --ink3:   #6e6860;
-  --rule:   rgba(240,236,226,0.10);
-  --shadow: 3px 4px 0 rgba(0,0,0,0.3);
-  --shadow-hover: 6px 8px 0 rgba(0,0,0,0.4);
+  --ink2:   #c8c2b6;
+  --ink3:   #7a7468;
+  --rule:   rgba(240,236,226,0.14);
+  --shadow: 3px 4px 0 rgba(0,0,0,0.4);
+  --shadow-hover: 6px 8px 0 rgba(0,0,0,0.5);
 }
-body.dark nav{background:rgba(17,16,9,0.88);}
+/* nav */
+body.dark nav{background:rgba(17,16,9,0.92);border-bottom-color:rgba(240,236,226,0.12);}
+/* hero grid overlay — more visible in dark */
+body.dark #hero::before{opacity:0.08;}
+/* all white-background cards → dark surface */
 body.dark .proj-block,
 body.dark .currently-card,
-body.dark .stat-tile:not(.big):not(.orange-bg),
 body.dark .svc-block,
 body.dark .testi-card,
 body.dark .pub-card,
-body.dark .tl-item{background:#1c1a15;}
-body.dark .social-pill{background:#1c1a15;color:var(--ink);}
-body.dark .social-pill:hover{background:var(--ink);color:#111;}
-body.dark .skill-pill{background:#1c1a15;color:var(--ink2);}
+body.dark .tl-item,
+body.dark .blog-card{background:var(--cream2);border-color:rgba(240,236,226,0.12);}
+/* stat tiles */
+body.dark .stat-tile{background:var(--cream2);border-color:rgba(240,236,226,0.12);}
+body.dark .stat-tile.big{background:#1a3a8a;}
+body.dark .stat-tile.orange-bg{background:var(--orange);}
+body.dark .stat-n{color:var(--ink);}
+body.dark .stat-label{color:var(--ink2);}
+/* social pills */
+body.dark .social-pill{background:var(--cream2);color:var(--ink);border-color:rgba(240,236,226,0.16);}
+body.dark .social-pill:hover{background:var(--ink);color:#111009;}
+/* skill pills */
+body.dark .skill-pill{background:var(--cream2);color:var(--ink2);border-color:rgba(240,236,226,0.12);}
 body.dark .skill-pill.tier1{background:var(--ink);color:#111009;}
+body.dark .skill-pill.tier2{background:var(--orange);color:white;}
+/* marquee */
+body.dark .marquee-wrap{background:var(--ink);color:var(--cream);}
+body.dark .marquee-item.hi{color:var(--yellow);}
+/* testi fade edges */
 body.dark .testi-track-wrap::before{background:linear-gradient(to right,var(--cream),transparent);}
 body.dark .testi-track-wrap::after{background:linear-gradient(to left,var(--cream),transparent);}
-body.dark .hero-gif-box{background:#1c1a15;}
-body.dark #hero::before{opacity:0.04;}
-body.dark .funfact{background:#1c1a15;border-color:var(--rule);}
-body.dark .ff-label,.body.dark .ff-text{color:var(--ink2);}
+/* hero gif box */
+body.dark .hero-gif-box{background:var(--cream3);}
+/* sticker badges in hero */
+body.dark .sticker{background:var(--cream2) !important;border-color:rgba(240,236,226,0.16);color:var(--ink);}
+/* float photos */
+body.dark .float-photo{border-color:var(--cream2);}
+/* fun fact banner */
+body.dark .funfact{background:var(--cream2);border-color:rgba(240,236,226,0.12);}
+body.dark .ff-label,body.dark .ff-text{color:var(--ink2);}
+/* dividers */
+body.dark hr.divider{border-top-color:rgba(240,236,226,0.12);}
+/* pub tags + proj tags */
+body.dark .pub-tags span,body.dark .pb-tags span,body.dark .proj-tags span{background:var(--cream3);border-color:rgba(240,236,226,0.12);color:var(--ink2);}
+/* proj link and badges */
+body.dark .proj-link{color:var(--orange);}
+body.dark .pb-badge{background:var(--cream3);color:var(--ink2);}
+/* contact box border */
+body.dark .contact-box{background:var(--ink);}
+body.dark .contact-email{color:var(--orange);}
+/* footer */
+body.dark footer{background:var(--cream2);border-top-color:rgba(240,236,226,0.10);color:var(--ink3);}
+/* blog card */
+body.dark #blog>div[style]{background:var(--cream2) !important;border-color:rgba(240,236,226,0.12) !important;}
+/* about section text */
+body.dark .about-text p,body.dark .tl-role,body.dark .tl-place,body.dark .tl-yr{color:var(--ink);}
+body.dark .tl-yr{color:var(--ink2);}
+/* services icons */
+body.dark .svc-icon{background:var(--cream3);}
 
 /* dark mode toggle button */
 #dm-toggle{
@@ -350,18 +391,18 @@ nav{
 .marquee-item.hi{color:var(--yellow);}
 
 /* ── LAYOUT ── */
-.section{padding:96px 52px;max-width:1000px;margin:0 auto;}
-.section-wide{padding:96px 52px;max-width:1200px;margin:0 auto;}
+.section{padding:60px 52px;max-width:1000px;margin:0 auto;}
+.section-wide{padding:60px 52px;max-width:1200px;margin:0 auto;}
 .divider{border:none;border-top:1.5px dashed var(--rule);margin:0 52px;}
 .s-label{
   font-family:var(--caveat);font-size:21px;font-weight:700;
-  color:var(--orange);margin-bottom:12px;
+  color:var(--orange);margin-bottom:8px;
   display:flex;align-items:center;gap:8px;
 }
 .sec-h{
   font-size:clamp(36px,5vw,68px);
   font-weight:900;letter-spacing:-2px;
-  line-height:0.9;margin-bottom:52px;
+  line-height:0.9;margin-bottom:36px;
 }
 .sec-h em{color:var(--orange);font-style:italic;}
 
@@ -936,11 +977,11 @@ nav{animation:navin 0.5s 0.05s ease both;}
 <!-- MARQUEE -->
 <div class="marquee-wrap">
   <div class="marquee-inner">
-    <span class="marquee-item hi"><span class="marquee-dot"></span>ML Engineer</span>
+    <span class="marquee-item hi"><span class="marquee-dot"></span>Data Scientist</span>
     <span class="marquee-item"><span class="marquee-dot"></span>LLM Integration</span>
     <span class="marquee-item"><span class="marquee-dot"></span>RAG Pipelines</span>
     <span class="marquee-item hi"><span class="marquee-dot"></span>AWS Bedrock</span>
-    <span class="marquee-item"><span class="marquee-dot"></span>Data Scientist</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>ML Engineer</span>
     <span class="marquee-item"><span class="marquee-dot"></span>Computer Vision</span>
     <span class="marquee-item hi"><span class="marquee-dot"></span>Vancouver 🍁</span>
     <span class="marquee-item"><span class="marquee-dot"></span>PyTorch</span>
@@ -951,11 +992,11 @@ nav{animation:navin 0.5s 0.05s ease both;}
     <span class="marquee-item hi"><span class="marquee-dot"></span>Open to work</span>
     <span class="marquee-item"><span class="marquee-dot"></span>LangChain</span>
     <span class="marquee-item"><span class="marquee-dot"></span>FastText · FAISS</span>
-    <span class="marquee-item hi"><span class="marquee-dot"></span>ML Engineer</span>
+    <span class="marquee-item hi"><span class="marquee-dot"></span>Data Scientist</span>
     <span class="marquee-item"><span class="marquee-dot"></span>LLM Integration</span>
     <span class="marquee-item"><span class="marquee-dot"></span>RAG Pipelines</span>
     <span class="marquee-item hi"><span class="marquee-dot"></span>AWS Bedrock</span>
-    <span class="marquee-item"><span class="marquee-dot"></span>Data Scientist</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>ML Engineer</span>
     <span class="marquee-item"><span class="marquee-dot"></span>Computer Vision</span>
     <span class="marquee-item hi"><span class="marquee-dot"></span>Vancouver 🍁</span>
     <span class="marquee-item"><span class="marquee-dot"></span>PyTorch</span>
@@ -1043,7 +1084,7 @@ nav{animation:navin 0.5s 0.05s ease both;}
       <div class="stat-emoji">🤝</div>
     </div>
     <div class="stat-tile">
-      <div class="stat-n">3.5<accent>+</accent></div>
+      <div class="stat-n">4<accent>+</accent></div>
       <div class="stat-l">years experience</div>
       <div class="stat-emoji">📦</div>
     </div>
@@ -1053,7 +1094,7 @@ nav{animation:navin 0.5s 0.05s ease both;}
       <div class="stat-emoji">👥</div>
     </div>
     <div class="stat-tile">
-      <div class="stat-n"><span data-target="60" data-s="%">0</span></div>
+      <div class="stat-n"><span data-target="90" data-s="%">0</span></div>
       <div class="stat-l">avg performance gains</div>
       <div class="stat-emoji">📈</div>
     </div>
@@ -1274,7 +1315,7 @@ nav{animation:navin 0.5s 0.05s ease both;}
       <div class="tl-items">
         <div class="tl-item"><div class="tl-yr">2025 →</div><div><div class="tl-role">Master of Data Science 🎓</div><div class="tl-place">University of British Columbia · Vancouver</div></div></div>
         <div class="tl-item"><div class="tl-yr">2024</div><div><div class="tl-role">Data Analyst Intern 📊</div><div class="tl-place">Spartan Poker · Gurugram</div></div></div>
-        <div class="tl-item"><div class="tl-yr">2022 →</div><div><div class="tl-role">Freelance ML Engineer 🔧</div><div class="tl-place">30+ clients · Remote</div></div></div>
+        <div class="tl-item"><div class="tl-yr">2022 →</div><div><div class="tl-role">Freelance Data Scientist 🔧</div><div class="tl-place">30+ clients · Remote</div></div></div>
         <div class="tl-item"><div class="tl-yr">2020–24</div><div><div class="tl-role">B.Tech CS — Data Science 📚</div><div class="tl-place">Symbiosis Institute of Technology · Pune</div></div></div>
       </div>
     </div>
@@ -1308,7 +1349,7 @@ nav{animation:navin 0.5s 0.05s ease both;}
 
 <!-- TESTIMONIALS -->
 <div class="section-wide reveal" id="testimonials">
-  <div class="section" style="padding-bottom:0;max-width:none;">
+  <div class="section" style="padding-bottom:0;max-width:none;padding-top:60px;">
     <div class="s-label">💬 what clients say</div>
     <h2 class="sec-h">Real words, <em>real people</em></h2>
   </div>
@@ -1371,13 +1412,13 @@ nav{animation:navin 0.5s 0.05s ease both;}
 
     </div>
   </div>
-  <p style="text-align:center;font-family:var(--mono);font-size:11px;color:var(--ink3);margin-top:20px;padding-bottom:96px;letter-spacing:0.06em;">hover to pause · scroll to read</p>
+  <p style="text-align:center;font-family:var(--mono);font-size:11px;color:var(--ink3);margin-top:16px;padding-bottom:60px;letter-spacing:0.06em;">hover to pause · scroll to read</p>
 </div>
 
 <hr class="divider"/>
 
 <!-- CONTACT -->
-<div class="section reveal" id="contact" style="padding-top:60px;padding-bottom:60px;">
+<div class="section reveal" id="contact" style="padding-top:48px;padding-bottom:48px;">
   <div class="contact-box">
     <div style="position:relative;z-index:1;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:40px;">
       <div style="flex:1;min-width:260px;text-align:left;">
@@ -1401,7 +1442,7 @@ nav{animation:navin 0.5s 0.05s ease both;}
 
 <!-- FOOTER -->
 <footer>
-  <div>ojasv issar · ml engineer · vancouver 🍁 · © 2026</div>
+  <div>ojasv issar · data scientist · vancouver 🍁 · © 2026</div>
   <div class="f-links">
     <a href="mailto:ojasvissar4@gmail.com">email</a>
     <a href="https://linkedin.com/in/ojasvissar" target="_blank">linkedin</a>
