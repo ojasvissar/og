@@ -55,36 +55,39 @@
     return '<rect x="' + f(x - h * 0.018) + '" y="' + f(by - h * 0.14) + '" width="' + f(h * 0.036) + '" height="' + f(h * 0.14) + '" fill="#3b2a1a"/><path d="' + d1 + '" fill="' + c1 + '"/><path d="' + d2 + '" fill="' + c2 + '"/>';
   }
 
-  // a painted cumulus in the hero's print style: sun-lit cream tops, sage-grey
-  // undersides, a flat base, rough brushed edges and the same fine grain as the art
+  // a soft cumulus: many overlapping puffs, lit from above, torn at the edges by noise and lightly blurred
   var cloudSeq = 0;
-  function softCloud(r, w, h) {
-    var id = "pc" + (cloudSeq++), n = 6 + Math.floor(r() * 4), lobes = [];
-    for (var i = 0; i < n; i++) {
-      var t = i / (n - 1), rad = h * (0.2 + Math.sin(t * Math.PI) * 0.3) * (0.8 + r() * 0.35);
-      var cy = Math.max(h * 0.1 + rad, h * 0.78 - rad * (0.45 + r() * 0.35));  // keep every puff inside the frame
-      lobes.push([w * 0.14 + t * w * 0.72 + (r() - 0.5) * w * 0.04, cy, rad]);
+  function softCloud(r, w, h, wispy) {
+    var id = "pc" + (cloudSeq++), base = h * 0.74, puffs = "", shade = "", core = "";
+    if (wispy) {   // thin stratus streaks
+      for (var k = 0; k < 7; k++) {
+        var ex = w * (0.15 + r() * 0.7), ey = h * (0.45 + r() * 0.2), rx = w * (0.18 + r() * 0.2), ry = h * (0.05 + r() * 0.05);
+        puffs += '<ellipse cx="' + f(ex) + '" cy="' + f(ey) + '" rx="' + f(rx) + '" ry="' + f(ry) + '"/>';
+      }
+      return '<svg viewBox="0 0 ' + w + " " + h + '" aria-hidden="true"><defs><filter id="' + id + 'f" x="-20%" y="-60%" width="140%" height="220%">' +
+        '<feTurbulence type="fractalNoise" baseFrequency=".02 .08" numOctaves="3" seed="' + Math.floor(r() * 90) + '"/><feDisplacementMap in="SourceGraphic" scale="' + f(h * 0.2) + '" xChannelSelector="R" yChannelSelector="G"/><feGaussianBlur stdDeviation="3"/></filter></defs>' +
+        '<g filter="url(#' + id + 'f)" fill="#fbf8ee" opacity=".75">' + puffs + "</g></svg>";
     }
-    var base = h * 0.78;
-    var disc = function (dx, dy, sc) {
-      return lobes.map(function (l) { return '<circle cx="' + f(l[0] + dx * l[2]) + '" cy="' + f(l[1] + dy * l[2]) + '" r="' + f(l[2] * sc) + '"/>'; }).join("");
-    };
+    var n = 11 + Math.floor(r() * 6);
+    for (var i = 0; i < n; i++) {
+      var t = r(), bell = Math.sin(t * Math.PI), rad = h * (0.12 + bell * 0.3) * (0.7 + r() * 0.5);
+      var cx = w * (0.1 + t * 0.8), cy = Math.max(rad + h * 0.06, base - rad * (0.35 + r() * 0.5) - bell * h * 0.12);
+      shade += '<circle cx="' + f(cx) + '" cy="' + f(cy + rad * 0.12) + '" r="' + f(rad) + '"/>';
+      puffs += '<circle cx="' + f(cx - rad * 0.06) + '" cy="' + f(cy - rad * 0.08) + '" r="' + f(rad * 0.94) + '"/>';
+      if (bell > 0.35) core += '<circle cx="' + f(cx - rad * 0.2) + '" cy="' + f(cy - rad * 0.3) + '" r="' + f(rad * 0.55) + '"/>';
+    }
     return '<svg viewBox="0 0 ' + w + " " + h + '" aria-hidden="true"><defs>' +
-      '<clipPath id="' + id + 'b"><rect x="0" y="0" width="' + w + '" height="' + f(base) + '"/></clipPath>' +
+      '<clipPath id="' + id + 'b"><rect x="0" y="0" width="' + w + '" height="' + f(base + h * 0.04) + '"/></clipPath>' +
+      '<linearGradient id="' + id + 'g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffdf5"/><stop offset=".7" stop-color="#eeeadb"/><stop offset="1" stop-color="#d9d9cc"/></linearGradient>' +
       '<filter id="' + id + 'f" x="-10%" y="-20%" width="120%" height="140%">' +
-        '<feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="3" seed="' + Math.floor(r() * 90) + '" result="n"/>' +
-        '<feDisplacementMap in="SourceGraphic" in2="n" scale="' + f(h * 0.07) + '" xChannelSelector="R" yChannelSelector="G" result="d"/>' +
-        '<feGaussianBlur in="d" stdDeviation=".7" result="soft"/>' +
-        '<feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="3" result="g"/>' +
-        '<feColorMatrix in="g" values="0 0 0 0 .36  0 0 0 0 .34  0 0 0 0 .27  0 0 0 .5 -.12" result="gr"/>' +
-        '<feComposite in="gr" in2="soft" operator="in" result="grain"/>' +
-        '<feMerge><feMergeNode in="soft"/><feMergeNode in="grain"/></feMerge></filter></defs>' +
-      '<g filter="url(#' + id + 'f)"><g clip-path="url(#' + id + 'b)">' +
-        '<g fill="#b7bca9">' + disc(0, 0.08, 1) + '<rect x="' + f(w * 0.1) + '" y="' + f(base - h * 0.14) + '" width="' + f(w * 0.8) + '" height="' + f(h * 0.14) + '" rx="' + f(h * 0.07) + '"/></g>' +
-        '<g fill="#dcdac8">' + disc(-0.08, -0.12, 0.86) + "</g>" +
-        '<g fill="#f5efdc">' + disc(-0.2, -0.3, 0.62) + "</g>" +
-        '<g fill="#fdf8ea">' + disc(-0.3, -0.42, 0.34) + "</g>" +
-      "</g></g></svg>";
+        '<feTurbulence type="fractalNoise" baseFrequency=".045" numOctaves="4" seed="' + Math.floor(r() * 90) + '" result="n"/>' +
+        '<feDisplacementMap in="SourceGraphic" in2="n" scale="' + f(h * 0.1) + '" xChannelSelector="R" yChannelSelector="G" result="d"/>' +
+        '<feGaussianBlur in="d" stdDeviation="1.6"/></filter></defs>' +
+      '<g filter="url(#' + id + 'f)" clip-path="url(#' + id + 'b)">' +
+        '<g fill="#c9cdc2" opacity=".9">' + shade + "</g>" +
+        '<g fill="url(#' + id + 'g)">' + puffs + "</g>" +
+        '<g fill="#fffef8" opacity=".75">' + core + "</g>" +
+      "</g></svg>";
   }
 
   function grass(r, x, y, h, col, w) {
@@ -143,19 +146,16 @@
     layers.push({ d: 0.02, par: "xMidYMin slice", body: '<g class="stars">' + stars + "</g>" });
 
     // the sun, and the moon waiting below the range to swap places with it
-    layers.push({ d: 0.04, par: "xMidYMin slice", body: '<g class="sun"><defs><radialGradient id="sg"><stop offset="0" stop-color="#fbeeb6"/><stop offset=".45" stop-color="#f7e7a3" stop-opacity=".55"/><stop offset="1" stop-color="#f7e7a3" stop-opacity="0"/></radialGradient></defs><circle cx="1090" cy="170" r="110" fill="url(#sg)"/><circle cx="1090" cy="170" r="30" fill="#f8e9ae"/></g>' +
+    layers.push({ d: 0.04, par: "xMidYMin slice", body: '<circle class="orb-anchor" cx="1090" cy="170" r="34" fill="none"/><g class="sun"><defs><radialGradient id="sg"><stop offset="0" stop-color="#fbeeb6"/><stop offset=".45" stop-color="#f7e7a3" stop-opacity=".55"/><stop offset="1" stop-color="#f7e7a3" stop-opacity="0"/></radialGradient></defs><circle cx="1090" cy="170" r="110" fill="url(#sg)"/><circle cx="1090" cy="170" r="30" fill="#f8e9ae"/></g>' +
       '<defs><radialGradient id="mg"><stop offset="0" stop-color="#f4f0dc" stop-opacity=".5"/><stop offset="1" stop-color="#f4f0dc" stop-opacity="0"/></radialGradient></defs>' +
       '<g class="moon"><circle cx="1090" cy="170" r="120" fill="url(#mg)"/><circle cx="1090" cy="170" r="34" fill="#efead6"/><circle cx="1079" cy="160" r="7" fill="#dcd6bf"/><circle cx="1100" cy="180" r="5" fill="#dcd6bf"/><circle cx="1096" cy="158" r="3" fill="#dcd6bf"/><circle cx="1076" cy="183" r="3.5" fill="#dcd6bf"/></g>' });
 
     // soft clouds drifting at the edges of the sky (zenwood-style), behind the name
     var cr = rng(7), soft = "";
-    [[-7, 21, 30, 0.97], [-3, 47, 19, 0.9], [80, 15, 27, 0.97], [86, 43, 22, 0.9], [60, 9, 12, 0.85], [30, 11, 9, 0.8]].forEach(function (c) {
-      soft += '<div class="soft-cloud" style="left:' + c[0] + "%;top:" + c[1] + "%;width:" + c[2] + "%;--o:" + c[3] + ";--cd:" + f(60 + cr() * 50) + "s;--cdl:" + f(-cr() * 50) + 's">' + softCloud(cr, 600, 260) + "</div>";
+    [[-6, 5, 21, 0.95], [-4, 50, 17, 0.85], [80, 15, 27, 0.97], [86, 43, 22, 0.9], [60, 9, 12, 0.85], [30, 11, 9, 0.8], [14, 17, 11, 0.8], [36, 20, 16, 0.8, true], [64, 26, 14, 0.75, true], [92, 4, 11, 0.85], [22, 2, 10, 0.8], [50, 13, 12, 0.7, true], [8, 30, 12, 0.85], [74, 6, 10, 0.8], [44, 2, 13, 0.85], [96, 26, 12, 0.85], [-4, 34, 13, 0.8], [58, 30, 13, 0.7, true], [26, 32, 11, 0.7, true]].forEach(function (c) {
+      soft += '<div class="soft-cloud" style="left:' + c[0] + "%;top:" + c[1] + "%;width:" + c[2] + "%;--o:" + c[3] + ";--cd:" + f(60 + cr() * 50) + "s;--cdl:" + f(-cr() * 50) + 's">' + softCloud(cr, 600, 260, c[4]) + "</div>";
     });
     layers.push({ d: 0.07, html: soft });
-
-    // the name sits here: behind the range, in front of the sky (filled in by placeName)
-    layers.push({ d: 0.12, html: "", name: true });
 
     // the painted range (assets/hero-mountains.*): transparent sky, so our gradient and sun show through
     layers.push({ d: 0.2, html: '<img class="range" src="assets/hero-mountains.webp" srcset="assets/hero-mountains-1280.webp 1280w, assets/hero-mountains.webp 2048w" sizes="104vw" alt="" decoding="async" fetchpriority="high" />', mountains: true });
@@ -171,7 +171,7 @@
     // the painted meadow (assets/hero-meadow.*) is the closest layer and moves the most
     layers.push({ d: 0.8, html: '<img class="range meadow" src="assets/hero-meadow.webp" srcset="assets/hero-meadow-1280.webp 1280w, assets/hero-meadow.webp 2048w" sizes="104vw" alt="" decoding="async" />' });
 
-    var flock = [[1, 30, 14, 34, -7], [2, 22, 16, 34, -8.2], [3, 36, 20, 29, -19], [1, 18, 22, 43, -3], [2, 26, 11, 38, -26]].map(function (b) {
+    var flock = [[1, 20, 29, 34, -7], [2, 15, 30.5, 34, -8.2], [3, 24, 32, 29, -19], [1, 13, 28, 43, -3], [2, 18, 31, 38, -26], [3, 14, 30, 36, -14], [1, 16, 29, 31, -22], [2, 12, 30, 40, -31], [3, 17, 31, 33, -2], [1, 11, 28, 45, -12]].map(function (b) {
       return '<img class="bird" src="assets/bird-' + b[0] + '.webp" alt="" style="--w:' + b[1] + "px;--y:" + b[2] + "%;--t:" + b[3] + "s;--dl:" + b[4] + 's" />';
     }).join("");
     var flies = "";
@@ -180,125 +180,53 @@
     }
 
     host.innerHTML = layers.map(function (l) {
-      return '<div class="layer' + (l.name ? " name-layer" : "") + '" data-depth="' + l.d + '">' + (l.html || (l.body ? svg("0 0 " + W + " " + H, l.body, l.par) : "")) + "</div>";
+      return '<div class="layer' + '" data-depth="' + l.d + '">' + (l.html || (l.body ? svg("0 0 " + W + " " + H, l.body, l.par) : "")) + "</div>";
     }).join("") + '<div class="flock">' + flock + '</div><div class="fireflies">' + flies + '</div><i class="shoot"></i>';
     heroLayers = $$(".layer", host);
   }
 
-  /* ── the name, tucked behind the centre peak ───────────────
-     RIDGE is the painted range's skyline: the first solid row in
-     every 8px column of the 2048×1152 image. The name is sized to
-     the screen and lowered until the bottom of the letters tucks
-     behind the peaks, while every letter stays readable.        */
-  var RIDGE = [668,670,671,671,666,660,657,657,654,657,656,649,640,631,628,628,623,616,609,609,603,595,590,595,596,588,576,568,556,556,544,536,529,508,499,490,487,478,469,476,477,485,501,508,521,534,543,554,564,564,570,575,575,578,577,582,589,594,603,612,613,613,608,604,595,589,581,568,561,559,569,581,587,599,604,609,610,607,591,588,578,569,568,569,557,546,539,539,537,522,517,511,494,485,467,455,447,460,467,467,479,486,499,511,517,515,499,489,474,470,463,456,439,426,424,428,428,418,403,401,388,373,365,353,363,368,365,371,377,381,388,401,407,420,423,423,435,454,457,466,468,478,479,469,455,443,435,426,413,407,410,412,419,423,428,427,424,420,422,435,445,451,459,467,480,486,495,508,517,527,530,536,543,549,551,564,568,564,552,550,561,567,574,584,583,579,573,568,563,558,546,534,521,514,522,527,532,532,537,549,552,558,563,574,579,584,588,590,589,583,576,567,557,552,556,558,558,557,555,551,547,541,529,516,513,501,495,486,472,463,463,454,453,465,471,480,479,483,492,505,511,520,531,539,545,551,556,554,556,563,569,575,580,581,589,597];
-  var IMG_W = 2048, IMG_H = 1152, STEP = 8;
-  var nameEl = $("[data-name]"), nameLayer = $(".name-layer"), mountainsImg = $(".layer img.range:not(.hills):not(.forest):not(.meadow)");
-  var metrics = null;
-  if (nameEl && nameLayer) nameLayer.appendChild(nameEl);
-
-  function measure100() {
-    var c = document.createElement("canvas").getContext("2d");
-    c.font = "100px 'Bowlby One'";
-    function word(w) {
-      var letters = [], total = c.measureText(w).width;
-      for (var i = 0; i < w.length; i++) {
-        var pre = c.measureText(w.slice(0, i)).width, m = c.measureText(w[i]);
-        letters.push([pre - m.actualBoundingBoxLeft, pre + m.actualBoundingBoxRight]);
-      }
-      return { w: total, letters: letters };
-    }
-    var h = c.measureText("H"), fm = c.measureText("OJASV ISSAR");
-    return { a: word("OJASV"), b: word("ISSAR"), sp: c.measureText(" ").width * 1.3, cap: h.actualBoundingBoxAscent, asc: fm.fontBoundingBoxAscent || 90, desc: fm.fontBoundingBoxDescent || 30 };
-  }
-
-  // share of a letter left in open sky: average over its columns of how much sits above the ridge
-  function skyShare(L, R, t, cap) {
-    var sum = 0, n = 0;
-    for (var x = L; x <= R; x += STEP) {
-      var r = RIDGE[Math.max(0, Math.min(RIDGE.length - 1, Math.floor(x / STEP)))];
-      sum += Math.max(0, Math.min(1, (r - t) / cap)); n++;
-    }
-    return n ? sum / n : 0;
-  }
-
-  // the whole name stays readable; only its lower part tucks behind the ridge
-  function solveName(win, tMin, M) {
-    var gapU = M.sp, totalU = M.a.w + gapU + M.b.w;
-    var F = Math.min(300, (win[1] - win[0]) * 0.9 / (totalU / 100));
-    var sc = F / 100, cap = M.cap * sc, total = totalU * sc;
-    var xa = (win[0] + win[1]) / 2 - total / 2, xb = xa + (M.a.w + gapU) * sc;
-    var shares = function (t) {
-      var all = [];
-      [[M.a, xa], [M.b, xb]].forEach(function (w) {
-        w[0].letters.forEach(function (l) { all.push(skyShare(w[1] + l[0] * sc, w[1] + l[1] * sc, t, cap)); });
-      });
-      return { avg: all.reduce(function (p, c) { return p + c; }, 0) / all.length, min: Math.min.apply(null, all) };
-    };
-    var best = null;
-    for (var t = Math.max(tMin, 200); t <= 760; t += 4) {
-      var sh = shares(t);
-      if (sh.min < 0.8) break;          // any lower and a letter starts to disappear
-      best = { F: F, t: t, xa: xa, xb: xb };
-      if (sh.avg <= 0.9) break;         // enough of the bottom is behind the mountains
-    }
-    return best || { F: F, t: Math.max(tMin, 200), xa: xa, xb: xb };
-  }
-
-  function placeName() {
-    if (!nameEl || !nameLayer || !metrics) return;
-    var hero = $(".hero"), Hw = hero.offsetWidth, Hh = hero.offsetHeight;
-    var Lw = nameLayer.offsetWidth, Lh = nameLayer.offsetHeight, Ih = mountainsImg ? mountainsImg.offsetHeight : Lh;
-    var k = Math.max(Lw / IMG_W, Ih / IMG_H), offX = (Lw - IMG_W * k) / 2, imgTop = Lh - IMG_H * k, layerTop = Hh - Lh;
-    var edge = Math.max(14, Hw * 0.03), bar = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--bar")) || 62;
-    var win = [(edge + 0.02 * Hw - offX) / k, (Hw - edge + 0.02 * Hw - offX) / k];
-    win = [Math.max(0, win[0]), Math.min(IMG_W, win[1])];
-    var tMin = (bar + 22 - layerTop - imgTop) / k;
-    var M = metrics, spans = $$(".w", nameEl), sol = solveName(win, tMin, M);
-    var P = sol.F * k, baseline = (P - (M.asc + M.desc) * P / 100) / 2 + M.asc * P / 100, capTop = baseline - M.cap * P / 100;
-    nameEl.style.fontSize = P + "px";
-    var top = imgTop + sol.t * k - capTop;
-    spans[0].style.left = f(offX + sol.xa * k) + "px"; spans[0].style.top = f(top) + "px";
-    spans[1].style.left = f(offX + sol.xb * k) + "px"; spans[1].style.top = f(top) + "px";
-    nameEl.classList.add("placed");
-  }
-
-  function initName() {
-    if (!nameEl) return;
-    var go = function () { metrics = measure100(); placeName(); };
-    if (document.fonts && document.fonts.load) document.fonts.load("100px 'Bowlby One'").then(go, go); else go();
-  }
-  initName();
-  var nameTimer;
-  window.addEventListener("resize", function () { clearTimeout(nameTimer); nameTimer = setTimeout(placeName, 120); });
 
   /* ── ranger station bar: menu, active trail, morning / night ─ */
   var topbar = $("[data-topbar]"), menu = $("#menu"), menuBtn = $("[data-menu-toggle]"), dn = $("[data-daynight]");
-  var barLinks = $$(".menu a[data-sec]"), lastY = 0;
+  var barLinks = $$(".topbar a[data-sec]"), lastY = 0;
   function setMenu(open) {
-    if (!menu) return;
+    if (!menu || !menuBtn) return;
     menu.classList.toggle("open", open);
     menuBtn.setAttribute("aria-expanded", String(open));
-    menuBtn.setAttribute("aria-label", open ? "close trail map" : "open trail map");
+    menuBtn.setAttribute("aria-label", open ? "close menu" : "open menu");
   }
   if (menuBtn) menuBtn.addEventListener("click", function () { setMenu(!menu.classList.contains("open")); });
   $$(".menu a").forEach(function (a) { a.addEventListener("click", function () { setMenu(false); }); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") setMenu(false); });
   document.addEventListener("click", function (e) { if (topbar && !topbar.contains(e.target)) setMenu(false); });
 
+  /* morning or night follows the visitor's clock; the toggle overrides it for this visit only */
+  var clockTheme = function () { var h = new Date().getHours(); return h >= 7 && h < 19 ? "day" : "night"; };
+  var manual = false;
+  try { manual = !!sessionStorage.getItem("og-theme"); } catch (e) {}
   function paintTheme() {
     var night = document.documentElement.getAttribute("data-theme") === "night";
     if (dn) {
+      var t = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
       dn.setAttribute("aria-pressed", String(night));
       dn.setAttribute("aria-label", night ? "switch to morning" : "switch to night");
+      dn.title = (manual ? "set by you" : "it's " + t + " where you are") + " · click for " + (night ? "morning" : "night");
     }
+  }
+  function setTheme(t) {
+    if (document.documentElement.getAttribute("data-theme") === t) return;
+    document.documentElement.setAttribute("data-theme", t);
+    paintTheme();
   }
   paintTheme();
   if (dn) dn.addEventListener("click", function () {
     var next = document.documentElement.getAttribute("data-theme") === "night" ? "day" : "night";
-    document.documentElement.setAttribute("data-theme", next);
-    try { localStorage.setItem("og-theme", next); } catch (e) {}
-    paintTheme();
+    manual = next !== clockTheme();                     // flipping back to what the clock says hands control back to the clock
+    try { if (manual) sessionStorage.setItem("og-theme", next); else sessionStorage.removeItem("og-theme"); } catch (e) {}
+    setTheme(next);
   });
+  // if someone is still here at 7am or 7pm, the sky turns with them
+  setInterval(function () { if (!manual) setTheme(clockTheme()); }, 60000);
 
   function updateBar() {
     if (!topbar) return;
@@ -312,7 +240,169 @@
       if (el && el.getBoundingClientRect().top <= line) cur = a;
     });
     barLinks.forEach(function (a) { a.classList.toggle("here", a === cur); });
+    if (!hoverLink) moveInd(menu && $(".menu a.here", menu));
   }
+
+  /* the dashed trail marker slides to whichever link you point at, then back to the current section */
+  var ind = $(".trail-ind"), hoverLink = null;
+  function moveInd(a) {
+    if (!ind) return;
+    if (!a) { ind.classList.remove("show"); return; }
+    ind.style.width = (a.offsetWidth - 30) + "px";
+    ind.style.transform = "translateX(" + (a.offsetLeft + 15) + "px)";
+    ind.classList.add("show");
+  }
+  $$(".menu > a").forEach(function (a) {
+    a.addEventListener("mouseenter", function () { hoverLink = a; moveInd(a); });
+    a.addEventListener("focus", function () { hoverLink = a; moveInd(a); });
+    a.addEventListener("blur", function () { hoverLink = null; moveInd($(".menu a.here")); });
+  });
+  if (menu) menu.addEventListener("mouseleave", function () { hoverLink = null; moveInd($(".menu a.here", menu)); });
+
+  /* ── the ridge as a dataset: a fitted curve, extrema and a gradient-descent walk ─────
+     RIDGE is the mountain painting's skyline: the first solid row in each 8px column
+     of the 2048×1152 image. Everything below is computed from it, so it lines up with
+     the painting at any screen size.                                                   */
+  var RIDGE = [668,670,671,671,666,660,657,657,654,657,656,649,640,631,628,628,623,616,609,609,603,595,590,595,596,588,576,568,556,556,544,536,529,508,499,490,487,478,469,476,477,485,501,508,521,534,543,554,564,564,570,575,575,578,577,582,589,594,603,612,613,613,608,604,595,589,581,568,561,559,569,581,587,599,604,609,610,607,591,588,578,569,568,569,557,546,539,539,537,522,517,511,494,485,467,455,447,460,467,467,479,486,499,511,517,515,499,489,474,470,463,456,439,426,424,428,428,418,403,401,388,373,365,353,363,368,365,371,377,381,388,401,407,420,423,423,435,454,457,466,468,478,479,469,455,443,435,426,413,407,410,412,419,423,428,427,424,420,422,435,445,451,459,467,480,486,495,508,517,527,530,536,543,549,551,564,568,564,552,550,561,567,574,584,583,579,573,568,563,558,546,534,521,514,522,527,532,532,537,549,552,558,563,574,579,584,588,590,589,583,576,567,557,552,556,558,558,557,555,551,547,541,529,516,513,501,495,486,472,463,463,454,453,465,471,480,479,483,492,505,511,520,531,539,545,551,556,554,556,563,569,575,580,581,589,597];
+  var IMG_W = 2048, IMG_H = 1152, STEP = 8;
+  var mtImg = $('.layer img.range[src*="hero-mountains"]'), mtLayer = mtImg && mtImg.parentNode, dsSvg = null;
+  function smoothArr(a, w) {
+    return a.map(function (_, i) { var s = 0, n = 0; for (var j = i - w; j <= i + w; j++) if (j >= 0 && j < a.length) { s += a[j]; n++; } return s / n; });
+  }
+  function buildRidgeDS() {
+    if (!mtLayer || !mtImg.offsetHeight) return;
+    var Lw = mtLayer.offsetWidth, Lh = mtLayer.offsetHeight, Ih = mtImg.offsetHeight;
+    var k = Math.max(Lw / IMG_W, Ih / IMG_H), offX = (Lw - IMG_W * k) / 2, imgTop = Lh - IMG_H * k;
+    var lb = mtLayer.getBoundingClientRect(), hero = $(".hero").getBoundingClientRect();
+    var vw = hero.width, dx = lb.left - hero.left, dy = lb.top - hero.top;
+    var X = function (i) { return offX + (i * STEP + 4) * k; }, Y = function (y) { return imgTop + y * k; };
+    var i0 = Math.max(2, Math.ceil(((-dx + 40) - offX) / k / STEP)), i1 = Math.min(RIDGE.length - 3, Math.floor(((vw - dx - 40) - offX) / k / STEP));
+    var sm = smoothArr(RIDGE, 2);
+    var hr = $("[data-hello]").getBoundingClientRect();
+    var nameBox = [hr.left - lb.left - 30, hr.top - lb.top - 24, hr.right - lb.left + 30, hr.bottom - lb.top + 20];
+    // keep leaders and labels off the sun / moon disc too
+    var orb = $(".hero-art .orb-anchor"), orbBox = null;
+    if (orb) { var ob = orb.getBoundingClientRect(), pad = ob.width * 0.9; orbBox = [ob.left - lb.left - pad, ob.top - lb.top - pad, ob.right - lb.left + pad, ob.bottom - lb.top + pad]; }
+
+    // extrema of the lightly smoothed skyline
+    var peaks = [], R = 10, i, j;
+    for (i = i0 + 2; i <= i1 - 2; i++) {
+      var ok = true;
+      for (j = Math.max(i0, i - R); j <= Math.min(i1, i + R); j++) if (sm[j] < sm[i] || (sm[j] === sm[i] && j < i)) { ok = false; break; }
+      if (ok) peaks.push(i);
+    }
+    if (!peaks.length) return;
+    var g = peaks.reduce(function (m, q) { return sm[q] < sm[m] ? q : m; }, peaks[0]);
+    var valleys = [];
+    for (var p = 0; p < peaks.length - 1; p++) {
+      var v = peaks[p];
+      for (j = peaks[p]; j <= peaks[p + 1]; j++) if (sm[j] > sm[v]) v = j;
+      valleys.push({ i: v, depth: sm[v] - Math.max(sm[peaks[p]], sm[peaks[p + 1]]), nextToG: peaks[p] === g || peaks[p + 1] === g });
+    }
+
+    // candidates, highest priority first; every one is written as a tiny code snippet + comment
+    var cands = [{ i: g, fn: "argmax", arg: "(f)", cm: "global optimum", key: true }];
+    var peakCode = [["hill_climb", "()", "local optimum"], ["find_peak", "(arr)", "O(log n)"], ["greedy", ".step()", "local optimum"], ["beam_search", "(k=3)", "best so far"], ["anneal", "(T=0.5)", "escapes?"]];
+    // every other peak, left to right, so the rightmost ones are always considered before the extras
+    peaks.filter(function (q) { return q !== g; }).sort(function (a, b) { return a - b; }).forEach(function (q, n) {
+      var pc = peakCode[n % peakCode.length]; cands.push({ i: q, fn: pc[0], arg: pc[1], cm: pc[2] });
+    });
+    var col = valleys.filter(function (v) { return v.nextToG && v.depth > 20; }).sort(function (a, b) { return b.depth - a.depth; })[0];
+    var low = valleys.filter(function (v) { return v !== col && v.depth > 30; }).sort(function (a, b) { return b.depth - a.depth; })[0];
+    if (low) cands.push({ i: low.i, fn: "gd.fit", arg: "(lr=.1)", cm: "converged ✓", gd: true, key: true });
+
+    // each chip sits just above its own point; if it would collide, it steps up a little, else it is skipped
+    var CW = 6.3, used = [], picked = [], maxN = vw < 700 ? 3 : vw < 1100 ? 5 : 8;
+    var hit = function (b, o) { return b[0] < o[2] && b[2] > o[0] && b[1] < o[3] && b[3] > o[1]; };
+    cands.forEach(function (c) {
+      if (picked.length >= maxN) return;
+      var x = X(c.i), y = Y(sm[c.i]) - 4;
+      var w = Math.max((c.fn + c.arg).length, c.cm.length + 2) * CW + 18, h = 34;
+      var ed0 = vw > 900 ? vw * 0.07 : 12, cx = Math.max(-dx + ed0 + w / 2, Math.min(vw - dx - ed0 - w / 2, x));   // chip slides in at the screen edges
+      // positions to try: above at three heights, then beside the point on the right, then on the left
+      var spots = [0, 1, 2].map(function (lift) { var bt = y - 16 - lift * 30; return { box: [cx - w / 2, bt - h, cx + w / 2, bt], stem: [x - 2, bt, x + 2, y] }; });
+      spots.push({ box: [x + 16, y - h / 2 - 6, x + 16 + w, y + h / 2 - 6], side: 1 });
+      spots.push({ box: [x - 16 - w, y - h / 2 - 6, x - 16, y + h / 2 - 6], side: -1 });
+      for (var si = 0; si < spots.length; si++) {
+        var box = spots[si].box, stem = spots[si].stem || [Math.min(x, box[0]), y - 1, Math.max(x, box[2]), y + 1];
+        var edge = vw > 900 ? vw * 0.07 : 10;   // the tall foreground pines stand at the edges
+        if (box[1] < 96 - dy || box[0] < -dx + edge || box[2] > vw - dx - edge) continue;
+        if (hit(box, nameBox) || hit(stem, nameBox)) continue;
+        if (orbBox && hit(box, orbBox)) continue;
+        if (used.some(function (u) { return hit([box[0] - 10, box[1] - 8, box[2] + 10, box[3] + 8], u); })) continue;
+        used.push(box); picked.push({ x: x, y: y, cx: cx, box: box, c: c, side: spots[si].side || 0 });
+        return;
+      }
+    });
+    var out = picked.sort(function (a, b) { return a.x - b.x; }).map(function (q, n) {
+      var b = q.box, c = q.c, tx = b[0] + 9;
+      return '<g style="--d:' + f(2.1 + n * 0.14) + 's">' +
+        (q.side ? '<line class="lead" x1="' + f(q.side > 0 ? b[0] : b[2]) + '" y1="' + f(q.y) + '" x2="' + f(q.x + q.side * 5) + '" y2="' + f(q.y) + '"/>'
+                : '<line class="lead" x1="' + f(q.x) + '" y1="' + f(b[3]) + '" x2="' + f(q.x) + '" y2="' + f(q.y - 5) + '"/>') +
+        '<rect class="chip" x="' + f(b[0]) + '" y="' + f(b[1]) + '" width="' + f(b[2] - b[0]) + '" height="' + f(b[3] - b[1]) + '" rx="4"/>' +
+        '<text class="code" x="' + f(tx) + '" y="' + f(b[1] + 14) + '"><tspan class="fn' + (c.key ? " key" : "") + '">' + c.fn + '</tspan><tspan class="arg">' + c.arg + "</tspan></text>" +
+        '<text class="code cm" x="' + f(tx) + '" y="' + f(b[1] + 27) + '"># ' + c.cm + "</text>" +
+        '<circle class="pt' + (c.key ? " key" : "") + '" cx="' + f(q.x) + '" cy="' + f(q.y) + '" r="4"/><circle class="pt-core" cx="' + f(q.x) + '" cy="' + f(q.y) + '" r="1.3"/></g>';
+    });
+    // gradient descent: shrinking steps from the neighbouring peak down into the minimum it converges to
+    var gdPick = picked.filter(function (q) { return q.c.gd; })[0];
+    if (gdPick) {
+      var vi = gdPick.c.i, from = null;
+      peaks.forEach(function (q) { if (q !== g && Math.abs(q - vi) < 40 && (from === null || Math.abs(q - vi) < Math.abs(from - vi))) from = q; });
+      if (from === null) from = peaks.reduce(function (m, q) { return Math.abs(q - vi) < Math.abs(m - vi) ? q : m; }, peaks[0]);
+      var fr = [0, .36, .6, .76, .86, .92, .96, .985], trail = "";
+      fr.forEach(function (t, n) {
+        var ii = Math.round(from + (vi - from) * t), px = X(ii), py = Y(sm[ii]) - 5;
+        if (px > nameBox[0] && px < nameBox[2] && py > nameBox[1]) return;
+        if (used.some(function (u) { return px > u[0] - 6 && px < u[2] + 6 && py > u[1] - 6 && py < u[3] + 6; })) return;
+        trail += '<circle class="gd-dot" cx="' + f(px) + '" cy="' + f(py) + '" r="' + f(2.4 - n * 0.14) + '" style="--dd:' + f(2.9 + n * 0.14) + 's"/>';
+      });
+      out.push('<g class="gd" style="--d:2.8s">' + trail + "</g>");
+    }
+    // the fitted skyline, barely there
+    var fit = smoothArr(RIDGE, 11), fd = "";
+    for (i = i0; i <= i1; i++) fd += (i === i0 ? "M" : "L") + f(X(i)) + " " + f(Y(fit[i]) - 10);
+    // the fitted line is masked out wherever a chip sits, so the two never cross
+    var holes = used.map(function (u) { return '<rect x="' + f(u[0] - 6) + '" y="' + f(u[1] - 6) + '" width="' + f(u[2] - u[0] + 12) + '" height="' + f(u[3] - u[1] + 12) + '" fill="#000"/>'; }).join("");
+    out.unshift('<defs><mask id="fit-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="' + Lw + '" height="' + Lh + '"><rect width="' + Lw + '" height="' + Lh + '" fill="#fff"/>' + holes + '</mask></defs>' +
+      '<g style="--d:1.9s"><path class="fit" mask="url(#fit-mask)" d="' + fd + '"/></g>');
+    if (!dsSvg) { dsSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg"); dsSvg.setAttribute("class", "ridge-ds"); dsSvg.setAttribute("aria-hidden", "true"); mtLayer.appendChild(dsSvg); }
+    dsSvg.setAttribute("viewBox", "0 0 " + Lw + " " + Lh);
+    dsSvg.innerHTML = out.join("");
+    clearAround(used.map(function (u) { return [u[0] + lb.left, u[1] + lb.top, u[2] + lb.left, u[3] + lb.top]; }));
+  }
+  /* keep the drifting clouds and the flock out of the chips' way */
+  function clearAround(chips) {
+    var hit = function (a, b) { return a[0] < b[2] && a[2] > b[0] && a[1] < b[3] && a[3] > b[1]; };
+    var drift = window.innerWidth * 0.03 + 8;           // clouds sway ±3vw
+    $$(".soft-cloud").forEach(function (c) {
+      c.classList.remove("yield");
+      var r = c.getBoundingClientRect(), core = [r.left - drift, r.top + r.height * 0.1, r.right + drift, r.top + r.height * 0.8];
+      if (chips.some(function (ch) { return hit(core, ch); })) c.classList.add("yield");
+    });
+    var flock = $(".flock");
+    if (!flock || !chips.length) return;
+    // measure the nav where it rests, not mid-entrance: offsets ignore transforms
+    var hero = $(".hero").getBoundingClientRect(), pill = $(".pill"), tb = $(".topbar");
+    var bar = pill ? tb.offsetTop + pill.offsetTop + pill.offsetHeight : 70;
+    var top = Math.min.apply(null, chips.map(function (ch) { return ch[1]; }));
+    // each bird's sprite is 1.53× as tall as it is wide (wing sweep); fit every bird wholly between nav and chips
+    var lo = bar + 6 - hero.top, hi = top - 6 - hero.top, birds = $$(".bird", flock);
+    var tallest = Math.max.apply(null, birds.map(function (b) { return parseFloat(b.style.getPropertyValue("--w")) * 1.53; }));
+    var roomy = hi - lo > tallest + 26;                              // room for the ±12px bob?
+    flock.classList.toggle("flat", !roomy);
+    birds.forEach(function (b, i) {
+      var h = parseFloat(b.style.getPropertyValue("--w")) * 1.53 + (roomy ? 24 : 0), span = hi - lo - h;
+      if (span >= 0) { b.style.display = ""; b.style.top = f(lo + (roomy ? 12 : 0) + span * ((i * 0.37) % 1)) + "px"; }
+      else { b.style.display = "none"; }                              // too big for the gap on this screen
+    });
+  }
+
+  var dsTimer;
+  var dsGo = function () { buildRidgeDS(); };
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { setTimeout(dsGo, 60); });
+  window.addEventListener("load", dsGo);
+  window.addEventListener("resize", function () { clearTimeout(dsTimer); dsTimer = setTimeout(dsGo, 150); });
 
   var mouse = { x: 0, y: 0 };
   if (canHover && !reduceMotion) {
@@ -323,20 +413,45 @@
     }, { passive: true });
   }
 
-  /* ── torn paper edges ──────────────────────────────────── */
+  /* ── torn paper edges: soft rolling rips with rough fibres, never a regular zigzag ── */
+  function noise1(r, knots) {
+    var v = []; for (var i = 0; i <= knots + 1; i++) v.push(r() * 2 - 1);
+    return function (t) {   // t in 0..1, smooth cosine interpolation between random knots
+      var x = t * knots, i = Math.floor(x), fr = x - i, w = (1 - Math.cos(fr * Math.PI)) / 2;
+      return v[i] * (1 - w) + v[i + 1] * w;
+    };
+  }
   $$("[data-tear]").forEach(function (el, idx) {
-    var r = rng(77 + idx * 13), W = 1440, H = 44, top = el.getAttribute("data-tear") === "top";
-    var pts = [], x = 0;
+    var r = rng(311 + idx * 97), W = 1440, H = 70, top = el.getAttribute("data-tear") === "top";
+    var big = noise1(r, 4 + Math.floor(r() * 3)), mid = noise1(r, 20);
+    // same gentle overall line as before; all the extra wildness lives at small scale
+    var pts = [], walk = 0, x = 0;
     while (x <= W) {
-      var y = 10 + r() * 16 + (r() < 0.08 ? 10 : 0);
-      pts.push([x, top ? H - y : y]);
-      x += 5 + r() * 12;
+      walk = walk * 0.45 + (r() - 0.5) * 7;                        // fast, choppy random walk
+      var y = 38 + 11 * big(x / W) + 4 * mid(x / W) + walk + (r() - 0.5) * 3;
+      if (r() < 0.035) {                                            // a loose fibre sticking out or a tiny nick
+        var w = 1.5 + r() * 3, hgt = (r() < 0.6 ? -1 : 1) * (2 + r() * 4.5);
+        pts.push([Math.min(x, W), y]); pts.push([Math.min(x + w / 2, W), y + hgt]); x += w;
+      }
+      pts.push([Math.min(x, W), Math.max(6, Math.min(H - 8, y))]);
+      x += 0.8 + r() * 1.6;
     }
-    pts.push([W, top ? H - 18 : 18]);
-    var edge = pts.map(function (p) { return f(p[0]) + " " + f(p[1]); }).join("L");
-    var d = top ? "M0 0L0 " + f(pts[0][1]) + "L" + edge + "L" + W + " 0Z" : "M0 " + H + "L" + edge + "L" + W + " " + H + "Z";
-    var fiber = top ? "M0 0L" + pts.map(function (p) { return f(p[0]) + " " + f(p[1] + 2.5); }).join("L") + "L" + W + " 0Z" : "M0 " + H + "L" + pts.map(function (p) { return f(p[0]) + " " + f(p[1] - 2.5); }).join("L") + "L" + W + " " + H + "Z";
-    el.innerHTML = svg("0 0 " + W + " " + H, '<path d="' + fiber + '" style="fill:var(--fiber)" opacity=".75"/><path d="' + d + '" fill="currentColor"/>', "none");
+    if (pts[pts.length - 1][0] < W) pts.push([W, pts[pts.length - 1][1]]);
+    var flip = function (y) { return top ? H - y : y; };
+    var path = function (off, jit) {
+      return pts.map(function (p) { return f(p[0]) + " " + f(flip(p[1] + off(p[0]) + (jit ? (r() - 0.5) * jit : 0))); }).join("L");
+    };
+    var close = top ? "L" + W + " 0L0 0Z" : "L" + W + " " + H + "L0 " + H + "Z";
+    var fringeW = noise1(r, 30);
+    var paper = "M" + path(function () { return 0; }) + close;
+    // the torn core of the paper shows as a pale, uneven band just beyond the coloured face
+    var fibre = "M" + path(function (px) { return -(2.5 + 3 * Math.abs(fringeW(px / W))); }, 4.5) + close;
+    var shade = "M" + path(function () { return -1; }) + close;
+    el.innerHTML = svg("0 0 " + W + " " + H,
+      '<defs><filter id="tsh' + idx + '" x="-2%" y="-40%" width="104%" height="180%"><feGaussianBlur stdDeviation="2.2"/></filter></defs>' +
+      '<path d="' + shade + '" fill="#000" opacity=".22" filter="url(#tsh' + idx + ')" transform="translate(0 ' + (top ? 2.5 : -2.5) + ')"/>' +
+      '<path d="' + fibre + '" style="fill:var(--fiber)"/>' +
+      '<path d="' + paper + '" fill="currentColor"/>', "none");
   });
 
   /* ── reveal on scroll ──────────────────────────────────── */
@@ -619,7 +734,7 @@
     peaks.forEach(function (p) {
       s += '<path d="M' + p[2] + " " + (p[3] - 7) + 'l7 12h-14z" fill="currentColor"/><text x="' + (p[2] + 12) + '" y="' + (p[3] + 2) + '" class="tp">' + p[0] + '</text><text x="' + (p[2] + 12) + '" y="' + (p[3] + 12) + '" class="tp s">' + p[1] + "</text>";
     });
-    var areas = [["HYPERPARAMETER HILLS", 120, 60, -6], ["OVERFIT RIDGE", 600, 40, 0], ["VALIDATION VALLEY", 1150, 236, 4], ["LOCAL MINIMA LAKE", 200, 830, 0], ["NaN FLATS", 60, 330, 0], ["BIAS–VARIANCE PASS", 1210, 820, -3], ["OUTLIER OUTCROP", 700, 870, 0], ["CONFUSION MATRIX MESA", 1180, 60, 2], ["BATCH NORM BASIN", 420, 700, -2]];
+    var areas = [["HYPERPARAMETER HILLS", 120, 104, -6], ["OVERFIT RIDGE", 600, 96, 0], ["VALIDATION VALLEY", 1150, 236, 4], ["LOCAL MINIMA LAKE", 200, 830, 0], ["NaN FLATS", 60, 330, 0], ["BIAS–VARIANCE PASS", 1210, 790, -3], ["OUTLIER OUTCROP", 700, 812, 0], ["CONFUSION MATRIX MESA", 1180, 100, 2], ["BATCH NORM BASIN", 420, 700, -2]];
     areas.forEach(function (a) { s += '<text x="' + a[1] + '" y="' + a[2] + '" class="ta" transform="rotate(' + a[3] + " " + a[1] + " " + a[2] + ')">' + a[0] + "</text>"; });
     var style = "<style>.tp{font:700 10px 'Josefin Sans',sans-serif;letter-spacing:.14em;fill:currentColor;text-transform:uppercase}.tp.s{font-size:8px}.ta{font:700 13px 'Josefin Sans',sans-serif;letter-spacing:.34em;fill:currentColor;opacity:.85}</style>";
     topoHost.innerHTML = '<canvas class="contours" aria-hidden="true"></canvas>' + svg("0 0 1440 900", style + s, "xMidYMid slice");
