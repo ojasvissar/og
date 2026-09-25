@@ -186,6 +186,33 @@
   }
 
 
+  /* ── intro: a cloud cover with five tiles, then the clouds part to reveal the hero ── */
+  (function () {
+    var root = document.documentElement, el = $("[data-intro]");
+    if (!el || !root.classList.contains("intro-on")) return;
+    var cl = $("[data-intro-clouds]", el), r = rng(2024), s = "";
+    for (var k = 0; k < 22; k++) {
+      var x = r() * 100, y = r() * 100, ang = Math.atan2(y - 50, x - 50);
+      s += '<i style="--x:' + f(x) + "%;--y:" + f(y) + "%;--s:" + f(380 + r() * 520) + "px;--dx:" + f(Math.cos(ang) * (60 + r() * 50)) + "vw;--dy:" + f(Math.sin(ang) * (50 + r() * 40)) + "vh;--d:" + f(r() * .25) + 's"></i>';
+    }
+    cl.innerHTML = s;
+    var done = false;
+    function part() {
+      if (done) return; done = true;
+      try { sessionStorage.setItem("og-intro", "1"); } catch (e) {}
+      el.classList.add("leaving");
+      root.classList.remove("intro-on");
+      document.dispatchEvent(new Event("intro:done"));
+      setTimeout(function () { el.remove(); }, 1700);
+    }
+    el.addEventListener("click", part);
+    window.addEventListener("keydown", part, { once: true });
+    var t0 = Date.now();
+    var ready = function () { setTimeout(part, Math.max(0, 2500 - (Date.now() - t0))); };
+    if (document.readyState === "complete") ready(); else window.addEventListener("load", ready, { once: true });
+    setTimeout(part, 5000);   // never hold anyone longer than this
+  })();
+
   /* ── tagline: types itself out inside the braces, like a line of code ── */
   (function () {
     var tag = $(".hello-tag");
@@ -204,7 +231,9 @@
       if (n < full.length) setTimeout(step, 55 + Math.random() * 70);
       else { i++; n = 0; setTimeout(step, el.tagName === "EM" ? 90 : 260); }
     }
-    setTimeout(step, 2200);   // start once the tagline has risen in
+    // start once the tagline has risen in (and, on a first visit, once the clouds have parted)
+    var go = function () { setTimeout(step, 2200); };
+    if (document.documentElement.classList.contains("intro-on")) document.addEventListener("intro:done", go, { once: true }); else go();
   })();
 
   /* ── cal.com booking: loaded only when someone scrolls near it, themed with the page ── */

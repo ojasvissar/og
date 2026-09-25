@@ -1380,3 +1380,59 @@ html:not(.js) .camp, .camps.in .camp { transform: none; opacity: 1; }
   .bird { animation: none; left: calc(20% + var(--y) * 4); }
   *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0s !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
+
+/* ── intro: a cream cloud cover with five carved tiles, then the clouds part to show the hero ── */
+.intro { display: none; }
+html.intro-on .intro, .intro.leaving { display: block; position: fixed; inset: 0; z-index: 1000; pointer-events: auto; cursor: pointer; }
+html.intro-on body { overflow: hidden; }
+.intro-veil { position: absolute; inset: 0; background: radial-gradient(120% 90% at 30% 15%, #f4ecd6 0%, #e9dcbd 55%, #f1e6cc 100%); transition: opacity .9s ease .25s; }
+:root[data-theme="night"] .intro-veil { background: radial-gradient(120% 90% at 30% 15%, #243026 0%, #18211b 55%, #1f2a22 100%); }
+.intro-clouds { position: absolute; inset: -15%; }
+.intro-clouds i { position: absolute; left: var(--x); top: var(--y); width: var(--s); height: calc(var(--s) * .62); margin: calc(var(--s) * -.31) 0 0 calc(var(--s) * -.5); border-radius: 50%;
+  background: radial-gradient(closest-side, #fbf5e4 0%, #f3e9cf 55%, rgba(243, 233, 207, 0) 100%); filter: blur(6px);
+  transition: transform 1.4s cubic-bezier(.55, 0, .2, 1) var(--d), opacity 1.1s ease var(--d); }
+:root[data-theme="night"] .intro-clouds i { background: radial-gradient(closest-side, #34423a 0%, #28342d 55%, rgba(40, 52, 45, 0) 100%); }
+.intro-center { position: absolute; inset: 0; display: grid; place-items: center; align-content: center; gap: 22px; transition: opacity .35s ease, transform .5s ease; }
+.intro-row { display: flex; gap: clamp(12px, 1.8vw, 20px); }
+.it { --tile: #6a4629; display: grid; place-items: center; width: clamp(50px, 7vw, 76px); aspect-ratio: 1; border-radius: 15%; background: var(--tile);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, .12), inset 0 -3px 0 rgba(0, 0, 0, .25), 0 10px 18px -10px rgba(40, 25, 10, .6); opacity: 0; transform: translateY(14px) scale(.8);
+  animation: it-in .55s cubic-bezier(.34, 1.6, .5, 1) forwards; animation-delay: calc(.15s + var(--i) * .16s); }
+.it:nth-child(1) { --i: 0; --tile: #5b3e2b; } .it:nth-child(2) { --i: 1; --tile: #2f4128; } .it:nth-child(3) { --i: 2; --tile: #7a4a2b; } .it:nth-child(4) { --i: 3; --tile: #075056; } .it:nth-child(5) { --i: 4; --tile: #4a3730; }
+@keyframes it-in { to { opacity: 1; transform: none; } }
+.it svg { width: 72%; height: 72%; overflow: visible; fill: none; stroke: #f4ecd2; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+/* each icon acts out one step: write code, wire a network, watch loss fall, reach the peak, refill the coffee */
+.it-code .bg { fill: rgba(255, 255, 255, .1); stroke: #f4ecd2; }
+.it-code .ln { stroke-dasharray: 14; stroke-dashoffset: 14; animation: draw .5s ease forwards; }
+.it-code .l1 { animation-delay: .5s; } .it-code .l2 { animation-delay: .75s; } .it-code .l3 { animation-delay: 1s; }
+.it-code .cur { stroke: #d9a932; animation: blink .5s steps(1) infinite 1.1s; opacity: 0; }
+@keyframes blink { 50% { opacity: 1; } }
+.it-net .edges path { stroke-width: 1; opacity: .5; stroke-dasharray: 120; stroke-dashoffset: 120; animation: draw 1s ease forwards .65s; }
+.it-net .nodes circle { fill: #f4ecd2; stroke: none; transform-box: fill-box; transform-origin: center; transform: scale(0); animation: pop .3s cubic-bezier(.34, 1.8, .5, 1) forwards; }
+.it-net .nodes circle:nth-child(1), .it-net .nodes circle:nth-child(2) { animation-delay: .55s; }
+.it-net .nodes circle:nth-child(3), .it-net .nodes circle:nth-child(4), .it-net .nodes circle:nth-child(5) { animation-delay: .85s; }
+.it-net .nodes .out { fill: #d9a932; animation-delay: 1.15s !important; }
+@keyframes pop { to { transform: scale(1); } }
+.it-loss .ax { opacity: .6; stroke-width: 1.4; }
+.it-loss .curve { stroke: #d9a932; stroke-width: 2.2; stroke-dasharray: 30; stroke-dashoffset: 30; animation: draw 1s cubic-bezier(.5, 0, .3, 1) forwards .8s; }
+.it-loss .dot { fill: #d9a932; stroke: none; opacity: 0; animation: fade .2s ease forwards 1.75s; }
+@keyframes fade { to { opacity: 1; } }
+.it-peak .mt { fill: rgba(255, 255, 255, .12); stroke-dasharray: 60; stroke-dashoffset: 60; animation: draw .9s ease forwards .95s; }
+.it-peak .snow { fill: #f4ecd2; stroke: none; opacity: 0; animation: fade .3s ease forwards 1.6s; }
+.it-peak .flag { stroke: #d9a932; stroke-dasharray: 12; stroke-dashoffset: 12; animation: draw .4s ease forwards 1.75s; }
+.it-cup .cup, .it-cup .handle { fill: rgba(255, 255, 255, .1); }
+.it-cup .steam { stroke-width: 1.4; opacity: 0; animation: steam 1.4s ease-in-out infinite; }
+.it-cup .s1 { animation-delay: 1.1s; } .it-cup .s2 { animation-delay: 1.4s; }
+@keyframes steam { 0% { opacity: 0; transform: translateY(2px); } 40% { opacity: .9; } 100% { opacity: 0; transform: translateY(-3px); } }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+.intro-cap { display: flex; align-items: center; gap: 12px; font: 700 10.5px var(--sans); letter-spacing: .34em; text-transform: uppercase; color: #6a5a3e; opacity: 0; animation: fade .6s ease forwards 1s; }
+:root[data-theme="night"] .intro-cap { color: #b9b096; }
+.intro-cap i { width: 28px; border-top: 1px solid currentColor; opacity: .5; }
+/* leaving: tiles drop away, clouds drift off to the sides, the veil lifts */
+.intro.leaving .intro-center { opacity: 0; transform: translateY(-10px) scale(.96); }
+.intro.leaving .intro-veil { opacity: 0; }
+.intro.leaving .intro-clouds i { transform: translate(var(--dx), var(--dy)) scale(1.5); opacity: 0; }
+/* hold the hero's own entrance until the clouds part */
+html.intro-on .pill, html.intro-on .pill *, html.intro-on .brand-mark, html.intro-on .hello > *, html.intro-on .hello::before { animation-play-state: paused !important; }
+.ft-credit { font-weight: 700; font-size: 9.5px; letter-spacing: .2em; color: #7f7862; }
+.ft-credit a { color: #b9b096; border-bottom: 1px solid rgba(185, 176, 150, .4); transition: color .2s, border-color .2s; }
+.ft-credit a:hover { color: var(--gold); border-color: var(--gold); }

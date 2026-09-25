@@ -20,6 +20,9 @@
     try { t = sessionStorage.getItem("og-theme"); localStorage.removeItem("og-theme"); } catch (e) {}
     if (t !== "day" && t !== "night") t = h >= 7 && h < 19 ? "day" : "night";
     r.setAttribute("data-theme", t);
+    // the cloud-cover intro plays once per visit, and never for people who asked for less motion
+    var seen = false; try { seen = sessionStorage.getItem("og-intro") === "1"; } catch (e) {}
+    if (!seen && !matchMedia("(prefers-reduced-motion: reduce)").matches) r.classList.add("intro-on");
   })();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -28,6 +31,20 @@
 <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+<div class="intro" data-intro aria-hidden="true">
+  <div class="intro-veil"></div>
+  <div class="intro-clouds" data-intro-clouds></div>
+  <div class="intro-center">
+    <div class="intro-row">
+      <div class="it it-code"><svg viewBox="0 0 30 30"><rect x="3" y="5" width="24" height="20" rx="2" class="bg"/><path class="ln l1" d="M7 11h9"/><path class="ln l2" d="M9 15h12"/><path class="ln l3" d="M9 19h7"/><path class="cur" d="M18 19h3"/></svg></div>
+      <div class="it it-net"><svg viewBox="0 0 30 30"><g class="edges"><path d="M6 9L15 6M6 9L15 15M6 9L15 24M6 21L15 6M6 21L15 15M6 21L15 24M15 6L24 15M15 15L24 15M15 24L24 15"/></g><g class="nodes"><circle cx="6" cy="9" r="2.4"/><circle cx="6" cy="21" r="2.4"/><circle cx="15" cy="6" r="2.4"/><circle cx="15" cy="15" r="2.4"/><circle cx="15" cy="24" r="2.4"/><circle cx="24" cy="15" r="2.8" class="out"/></g></svg></div>
+      <div class="it it-loss"><svg viewBox="0 0 30 30"><path class="ax" d="M5 5v20h20"/><path class="curve" d="M7 8 C 10 18, 13 21, 17 22 S 23 23, 25 23"/><circle class="dot" cx="25" cy="23" r="1.8"/></svg></div>
+      <div class="it it-peak"><svg viewBox="0 0 30 30"><path class="mt" d="M3 24L11 12L15 17L20 9L27 24Z"/><path class="snow" d="M18.2 11.8L20 9L21.8 11.8L20 12.8Z"/><path class="flag" d="M20 9V4.5L24 6L20 7.5"/></svg></div>
+      <div class="it it-cup"><svg viewBox="0 0 30 30"><path class="cup" d="M7 12h13v7a5 5 0 0 1-5 5h-3a5 5 0 0 1-5-5z"/><path class="handle" d="M20 14h2a3 3 0 0 1 0 6h-2"/><path class="steam s1" d="M11 9c-1-1.5 1-2.5 0-4"/><path class="steam s2" d="M15 9c-1-1.5 1-2.5 0-4"/></svg></div>
+    </div>
+    <p class="intro-cap"><span>ojasv issar</span><i></i><span>clearing the trail</span></p>
+  </div>
+</div>
 <a class="skip" href="#work">skip to content</a>
 
 <!-- ── ranger station menu bar ───────────────────────────── -->
@@ -479,6 +496,7 @@
     <div class="ft-bottom">
       <button type="button" class="to-trailhead" data-to-top>back to the trailhead ↑</button>
       <p>© 2026 Ojasv Issar · 49.28°N 123.12°W · updated 09.2026</p>
+      <p class="ft-credit">Design inspired by <a href="https://justmckissick.com/" target="_blank" rel="noopener noreferrer">Justin McKissick</a>'s trail-guide portfolio</p>
     </div>
   </div>
 </footer>
