@@ -186,6 +186,62 @@
   }
 
 
+  /* ── tagline: types itself out inside the braces, like a line of code ── */
+  (function () {
+    var tag = $(".hello-tag");
+    if (!tag || reduceMotion) return;
+    var parts = $$("span, em", tag), texts = parts.map(function (el) { return el.textContent; });
+    parts.forEach(function (el) { el.textContent = ""; el.classList.add("typed-empty"); });
+    var caret = document.createElement("i");
+    caret.className = "type-caret"; caret.setAttribute("aria-hidden", "true");
+    parts[0].parentNode.insertBefore(caret, parts[0]);
+    var i = 0, n = 0;
+    function step() {
+      if (i >= parts.length) { caret.classList.add("rest"); return; }
+      var el = parts[i], full = texts[i];
+      if (n === 0) { el.classList.remove("typed-empty"); el.after(caret); }
+      el.textContent = full.slice(0, ++n);
+      if (n < full.length) setTimeout(step, 55 + Math.random() * 70);
+      else { i++; n = 0; setTimeout(step, el.tagName === "EM" ? 90 : 260); }
+    }
+    setTimeout(step, 2200);   // start once the tagline has risen in
+  })();
+
+  /* ── cal.com booking: loaded only when someone scrolls near it, themed with the page ── */
+  (function () {
+    var host = $("#cal-inline");
+    if (!host) return;
+    var loaded = false, NS = "30min";
+    var theme = function () { return "dark"; };   // the calendar stays dark against the postcard, whatever the hour
+    function load() {
+      if (loaded) return; loaded = true;
+      (function (C, A, L) { var p = function (a, ar) { a.q.push(ar); }; var d = C.document;
+        C.Cal = C.Cal || function () { var cal = C.Cal, ar = arguments;
+          if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement("script")).src = A; cal.loaded = true; }
+          if (ar[0] === L) { var api = function () { p(api, arguments); }, namespace = ar[1]; api.q = api.q || [];
+            if (typeof namespace === "string") { cal.ns[namespace] = cal.ns[namespace] || api; p(cal.ns[namespace], ar); p(cal, ["initNamespace", namespace]); } else p(cal, ar); return; }
+          p(cal, ar); };
+      })(window, "https://app.cal.com/embed/embed.js", "init");
+      host.innerHTML = "";
+      Cal("init", NS, { origin: "https://cal.com" });
+      Cal.ns[NS]("inline", { elementOrSelector: "#cal-inline", calLink: host.getAttribute("data-cal-link"), config: { layout: "month_view", theme: theme() } });
+      Cal.ns[NS]("ui", { theme: theme(), hideEventTypeDetails: false, layout: "month_view",
+        cssVarsPerTheme: { dark: { "cal-brand": "#d9a932" } } });
+    }
+    if ("IntersectionObserver" in window) {
+      var cio2 = new IntersectionObserver(function (es) { if (es[0].isIntersecting) { load(); cio2.disconnect(); } }, { rootMargin: "800px" });
+      cio2.observe(host);
+    } else load();
+  })();
+
+  /* postcard: copy the email address */
+  $$(".pc-copy").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var done = function () { b.textContent = "copied ✓"; b.classList.add("ok"); setTimeout(function () { b.textContent = "copy"; b.classList.remove("ok"); }, 1800); };
+      if (navigator.clipboard) navigator.clipboard.writeText(b.getAttribute("data-copy")).then(done, done); else done();
+    });
+  });
+
   /* ── ranger station bar: menu, active trail, morning / night ─ */
   var topbar = $("[data-topbar]"), menu = $("#menu"), menuBtn = $("[data-menu-toggle]"), dn = $("[data-daynight]");
   var barLinks = $$(".topbar a[data-sec]"), lastY = 0;
@@ -447,11 +503,26 @@
     // the torn core of the paper shows as a pale, uneven band just beyond the coloured face
     var fibre = "M" + path(function (px) { return -(2.5 + 3 * Math.abs(fringeW(px / W))); }, 4.5) + close;
     var shade = "M" + path(function () { return -1; }) + close;
+    // data-cut: rip the section above along this edge instead of painting its colour, so its own texture runs to the tear
+    var cut = el.getAttribute("data-cut") && document.getElementById(el.getAttribute("data-cut"));
+    if (cut) {
+      // no paper is painted over a cut edge, so the fibre must be a thin band along the rip, not a fill
+      var off = function (px) { return -(2.5 + 3 * Math.abs(fringeW(px / W))); };
+      var fwd = pts.map(function (p) { return [p[0], flip(p[1] + off(p[0]) + (r() - .5) * 4.5)]; });
+      var back = pts.slice().reverse().map(function (p) { return [p[0], flip(p[1])]; });
+      fibre = "M" + fwd.concat(back).map(function (p) { return f(p[0]) + " " + f(p[1]); }).join("L") + "Z";
+      shade = fibre;
+    }
+    if (cut) {
+      var m = 'url("data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + " " + H + '" preserveAspectRatio="none"><path d="' + paper + '"/></svg>') +
+        '") left bottom / 100% var(--tear-h) no-repeat, linear-gradient(#000 0 0) left top / 100% calc(100% - var(--tear-h) + 1px) no-repeat';
+      cut.style.webkitMask = m; cut.style.mask = m;
+    }
     el.innerHTML = svg("0 0 " + W + " " + H,
       '<defs><filter id="tsh' + idx + '" x="-2%" y="-40%" width="104%" height="180%"><feGaussianBlur stdDeviation="2.2"/></filter></defs>' +
       '<path d="' + shade + '" fill="#000" opacity=".22" filter="url(#tsh' + idx + ')" transform="translate(0 ' + (top ? 2.5 : -2.5) + ')"/>' +
       '<path d="' + fibre + '" style="fill:var(--fiber)"/>' +
-      '<path d="' + paper + '" fill="currentColor"/>', "none");
+      (cut ? "" : '<path d="' + paper + '" fill="currentColor"/>'), "none");
   });
 
   /* ── reveal on scroll ──────────────────────────────────── */
@@ -635,27 +706,28 @@
     crop: { biome: "prairie", slides: [
       { cap: "<b>Satellite + weather fusion:</b> MMST-ViT reads imagery and weather side by side",
         ui: function (r) { return '<div class="bar"><i></i><i></i><i></i><span>mmst-vit</span><em>pytorch</em></div><div class="pad cols"><div class="card"><p class="muted">satellite tiles</p>' + grid(r, 12, 6, ["#e9f1d8", "#c9dfa4", "#9fc672", "#6fa24a", "#487a33"]) + '</div><div class="card"><p class="muted">weather</p>' + lineChart([{ v: series(r, 30, 10, 0.1, 3), c: "#e8664d" }, { v: series(r, 30, 5, 0, 4), c: "#4f8fd6" }], { h: 100 }) + '</div></div><div class="pad" style="padding-top:0"><div class="card"><p class="muted">yield forecast</p>' + lineChart([{ v: series(r, 40, 10, 0.08, 1.6), c: "#6aa85a", area: true }], { h: 70 }) + "</div></div>"; } },
-      { cap: "<b>Stress partitions:</b> RMSE measured separately for heatwave, drought and extreme rain",
-        ui: function () { return '<div class="bar"><i></i><i></i><i></i><span>distribution shift</span><em>rmse by regime</em></div><div class="pad">' + bars([3, 5, 4.6, 5.4], ["#9aa3ad", "#e8664d", "#f0b53d", "#4f8fd6"].map(function (c) { return [c]; }), { h: 130 }) + '<p style="display:flex;justify-content:space-around;margin-top:.4em"><span class="chip">baseline</span><span class="chip o">heatwave</span><span class="chip" style="background:#fdf1d6;color:#8a6410">drought</span><span class="chip b">extreme rain</span></p></div>'; } },
-      { cap: "<b>Climate augmentation:</b> temperature offsets, rainfall scaling and extreme-year oversampling",
-        ui: function (r) { return '<div class="bar"><i></i><i></i><i></i><span>augment.py</span><em>retraining</em></div><div class="pad" style="display:grid;grid-template-columns:repeat(3,1fr);gap:.8em"><div class="card"><p class="muted">temperature + offset</p>' + lineChart([{ v: series(r, 20, 5, 0.05, 2), c: "#c9c3b5" }, { v: series(r, 20, 9, 0.05, 2), c: "#e8664d" }], { h: 90 }) + '</div><div class="card"><p class="muted">rainfall × scale</p>' + bars([3, 5, 2, 6, 4, 7], ["#4f8fd6"], { h: 90 }) + '</div><div class="card"><p class="muted">extreme years ↑</p>' + bars([2, 2, 6, 2, 7, 2], ["#f0b53d"], { h: 90 }) + "</div></div>"; } }
+      { cap: "<b>Contrastive pre-training:</b> SimCLR teaches the PVT backbone what fields look like",
+        ui: function (r) { var loss = []; for (var i = 0; i < 40; i++) loss.push(6 * Math.exp(-i / 11) + 1 + (r() - 0.5) * 0.35);
+          return '<div class="bar"><i></i><i></i><i></i><span>main_pretrain_mmst_vit.py</span><em>nt-xent loss</em></div><div class="pad"><p class="muted">contrastive loss by epoch</p>' + lineChart([{ v: loss, c: "#6aa85a", area: true }], { h: 120 }) + '<p style="margin-top:.6em"><span class="chip g">SimCLR</span> <span class="chip">PVT backbone</span> <span class="chip">Sentinel-2 tiles</span></p></div>'; } },
+      { cap: "<b>Spatial + temporal:</b> county grids, then the whole growing season",
+        ui: function () { return '<div class="bar"><i></i><i></i><i></i><span>models_mmst_vit.py</span><em>architecture</em></div><div class="flow"><div class="node">Sentinel-2<small>satellite tiles</small></div><span class="arrow">→</span><div class="node">PVT<small>pre-trained</small></div><span class="arrow">→</span><div class="node hot">spatial<small>attention</small></div><span class="arrow">→</span><div class="node hot">temporal<small>attention</small></div><span class="arrow">→</span><div class="node">yield<small>per county</small></div></div><div class="pad" style="padding-top:0"><div class="card"><span class="chip b">HRRR weather</span> <span class="chip">long-term climate</span> <span class="chip o">USDA stats</span></div></div>'; } }
     ] },
     asteroid: { biome: "desert", slides: [
-      { cap: "<b>Class imbalance:</b> hazardous objects are a sliver of 958,524 records",
-        ui: function () { return '<div class="bar"><i></i><i></i><i></i><span>eda.ipynb</span><em>nasa / jpl</em></div><div class="pad cols"><div><p class="muted">records</p><p class="kpi">958,524</p><p style="margin-top:.6em"><span class="chip o">PHO</span> <span class="chip">not hazardous</span></p><p class="muted" style="margin-top:.8em">resampled with SMOTENC before training</p></div><div><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="44" fill="none" stroke="#e6e3da" stroke-width="18"/><circle cx="60" cy="60" r="44" fill="none" stroke="#e8664d" stroke-width="18" stroke-dasharray="6 300" transform="rotate(-90 60 60)"/></svg></div></div>'; } },
-      { cap: "<b>Feature importance:</b> eccentricity and perihelion distance lead the risk signal",
-        ui: function () { var items = [["eccentricity", 96], ["perihelion distance", 84], ["", 46], ["", 38], ["", 27], ["", 18]];
+      { cap: "<b>Class imbalance:</b> about 0.2% of 958,524 records are hazardous",
+        ui: function () { return '<div class="bar"><i></i><i></i><i></i><span>eda.ipynb</span><em>nasa / jpl</em></div><div class="pad cols"><div><p class="muted">records</p><p class="kpi">958,524</p><p style="margin-top:.6em"><span class="chip o">PHO</span> <span class="chip">not hazardous</span></p><p class="muted" style="margin-top:.8em">SMOTENC tested, and it turned out not to help</p></div><div><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="44" fill="none" stroke="#e6e3da" stroke-width="18"/><circle cx="60" cy="60" r="44" fill="none" stroke="#e8664d" stroke-width="18" stroke-dasharray="6 300" transform="rotate(-90 60 60)"/></svg></div></div>'; } },
+      { cap: "<b>Feature importance:</b> orbit intersection distance and absolute magnitude lead",
+        ui: function () { var items = [["moid", 96], ["absolute magnitude H", 84], ["", 46], ["", 38], ["", 27], ["", 18]];
           return '<div class="bar"><i></i><i></i><i></i><span>feature importance</span><em>xgboost</em></div><div class="pad">' + items.map(function (x, i) { return '<div class="row"><span style="flex:0 0 38%">' + (x[0] ? "<b>" + x[0] + "</b>" : '<span class="line" style="display:block;width:70%;margin:0"></span>') + '</span><span style="flex:1;height:.8em;border-radius:4px;background:#f1efe9;overflow:hidden"><b style="display:block;height:100%;width:' + x[1] + '%;background:' + (i < 2 ? "#e8664d" : "#c9c3b5") + '"></b></span></div>'; }).join("") + "</div>"; } },
-      { cap: "<b>Ensembles:</b> XGBoost and random forest, with recursive feature elimination",
-        ui: function () { return '<div class="bar"><i></i><i></i><i></i><span>evaluate.py</span><em>confusion matrix</em></div><div class="pad"><div class="cm"><span></span><span class="muted">predicted PHO</span><span class="muted">predicted safe</span><span class="muted">actual PHO</span><div style="background:#dff1e1;color:#2f7a3a">TP</div><div style="background:#fde3dc;color:#a8481f">FN</div><span class="muted">actual safe</span><div style="background:#fdf0d8;color:#8a6410">FP</div><div style="background:#e9eef6;color:#43506a">TN</div></div><p style="margin-top:.8em"><span class="chip">RFE</span> <span class="chip">SMOTENC</span> <span class="chip o">XGBoost</span> <span class="chip g">random forest</span></p></div>'; } }
+      { cap: "<b>Test results:</b> 89% recall and 99.7% precision on 187,720 held-out rows",
+        ui: function () { return '<div class="bar"><i></i><i></i><i></i><span>evaluate.py</span><em>confusion matrix</em></div><div class="pad"><div class="cm"><span></span><span class="muted">predicted PHO</span><span class="muted">predicted safe</span><span class="muted">actual PHO</span><div style="background:#dff1e1;color:#2f7a3a">379</div><div style="background:#fde3dc;color:#a8481f">47</div><span class="muted">actual safe</span><div style="background:#fdf0d8;color:#8a6410">1</div><div style="background:#e9eef6;color:#43506a">187,293</div></div><p style="margin-top:.8em"><span class="chip">RFECV</span> <span class="chip">robust scaler</span> <span class="chip o">XGBoost</span> <span class="chip g">ROC-AUC ~0.99</span></p></div>'; } }
     ] },
     disaster: { biome: "coast", slides: [
-      { cap: "<b>World view:</b> EM-DAT disaster records mapped by type and place",
-        ui: function (r) { return '<div class="bar"><i></i><i></i><i></i><span>DisasterDash</span><em>plotly dash</em></div><div class="side"><p class="muted">disaster type</p><p style="line-height:2.1"><span class="chip o">flood</span> <span class="chip b">storm</span><br /><span class="chip" style="background:#fdf1d6;color:#8a6410">drought</span> <span class="chip g">wildfire</span><br /><span class="chip p">earthquake</span></p><p class="muted" style="margin-top:.6em">region</p><div class="line"></div><div class="line" style="width:70%"></div></div><div class="main">' + worldMap(r) + "</div>"; } },
-      { cap: "<b>Trends:</b> events over time, filterable by type and region",
+      { cap: "<b>World view:</b> disaster frequency on a map, filtered by type, date and country",
+        ui: function (r) { return '<div class="bar"><i></i><i></i><i></i><span>DisasterDash</span><em>shiny for python</em></div><div class="side"><p class="muted">disaster type</p><p style="line-height:2.1"><span class="chip o">flood</span> <span class="chip b">storm</span><br /><span class="chip" style="background:#fdf1d6;color:#8a6410">drought</span> <span class="chip g">wildfire</span><br /><span class="chip p">earthquake</span></p><p class="muted" style="margin-top:.6em">region</p><div class="line"></div><div class="line" style="width:70%"></div></div><div class="main">' + worldMap(r) + "</div>"; } },
+      { cap: "<b>The aid gap:</b> economic losses against the aid that actually arrived",
         ui: function (r) { return '<div class="bar"><i></i><i></i><i></i><span>DisasterDash</span><em>trends</em></div><div class="pad">' + lineChart([{ v: series(r, 40, 4, 0.12, 2), c: "#4f8fd6", area: true }, { v: series(r, 40, 2, 0.08, 1.5), c: "#e8664d", area: true }], { h: 130 }) + '<div style="margin-top:.8em;height:.5em;border-radius:4px;background:#eceae4;position:relative"><b style="position:absolute;left:30%;right:15%;top:0;bottom:0;background:#4f8fd6;border-radius:4px"></b></div><p class="muted" style="margin-top:.4em">year range</p></div>'; } },
-      { cap: "<b>Breakdown:</b> compare disaster types across regions",
-        ui: function (r) { var v = []; for (var i = 0; i < 6; i++) v.push([2 + r() * 3, 1 + r() * 3, 1 + r() * 2, r() * 2]); return '<div class="bar"><i></i><i></i><i></i><span>DisasterDash</span><em>by region</em></div><div class="pad">' + bars(v, ["#4f8fd6", "#e8664d", "#f0b53d", "#6aa85a"], { h: 140 }) + '<p style="margin-top:.4em"><span class="chip b">storm</span> <span class="chip o">flood</span> <span class="chip" style="background:#fdf1d6;color:#8a6410">drought</span> <span class="chip g">wildfire</span></p></div>'; } }
+      { cap: "<b>AI Explorer:</b> ask the data questions in plain English",
+        ui: function () { return '<div class="bar"><i></i><i></i><i></i><span>DisasterDash</span><em>ai explorer · claude</em></div><div class="pad"><div class="card" style="margin-left:18%;background:#eef2f7"><p>Which countries had the biggest gap between losses and aid in 2010?</p></div><div class="card" style="margin-top:.7em;margin-right:12%"><p class="muted">querying EM-DAT…</p><div class="line" style="width:92%"></div><div class="line" style="width:74%"></div><div class="line" style="width:58%"></div></div><p style="margin-top:.7em"><span class="chip p">natural language</span> <span class="chip">anthropic api</span></p></div>'; } }
     ] },
     temp: { biome: "alpine", slides: [
       { cap: "<b>222 years:</b> Berkeley Earth land temperature records, 1800s to today",
@@ -674,35 +746,364 @@
     ] }
   };
 
+  // each project's screens, taped into its journal page
   $$("[data-park]").forEach(function (park, pi) {
-    var P = PARKS[park.getAttribute("data-park")], host = $("[data-gallery]", park);
+    var P = PARKS[park.getAttribute("data-park")], host = $("[data-shots]", park);
     if (!P || !host) return;
     host.innerHTML = P.slides.map(function (sl, i) {
-      var seed = 101 + pi * 17 + i * 5, r = rng(seed * 3);
-      return '<figure class="slide"><div class="frame"><div class="scene">' + scene(P.biome, seed) + '</div><div class="ui">' + sl.ui(r) + '</div><div class="fore">' + foreground(P.biome, seed) + '</div></div><figcaption>' + sl.cap + "</figcaption></figure>";
+      var seed = 101 + pi * 17 + i * 5, r = rng(seed * 3), label = (sl.cap.match(/<b>(.*?):?<\/b>/) || ["", ""])[1].toLowerCase();
+      return '<figure class="jn-shot" style="--i:' + i + '" title="' + sl.cap.replace(/<[^>]+>/g, "") + '">' + (i ? '<i class="jn-tape jn-t4"></i>' : '<i class="jn-tape jn-t1"></i><i class="jn-tape jn-t2"></i>') +
+        '<div class="frame"><div class="scene">' + scene(P.biome, seed) + '</div><div class="ui">' + sl.ui(r) + '</div><div class="fore">' + foreground(P.biome, seed) + '</div></div><figcaption>' + label + "</figcaption></figure>";
     }).join("");
-    enableDrag(host);
+    $$(".jn-shot", host).forEach(function (shot) {
+      shot.tabIndex = 0;
+      shot.setAttribute("role", "button");
+      shot.setAttribute("aria-label", "Enlarge " + shot.getAttribute("title"));
+      shot.setAttribute("aria-haspopup", "dialog");
+    });
   });
 
-  function enableDrag(el) {
-    var down = false, sx = 0, sl = 0, moved = false;
-    el.addEventListener("pointerdown", function (e) {
-      if (e.pointerType !== "mouse") return;
-      down = true; moved = false; sx = e.clientX; sl = el.scrollLeft;
-    });
-    window.addEventListener("pointermove", function (e) {
-      if (!down) return;
-      var dx = e.clientX - sx;
-      if (Math.abs(dx) > 5) { moved = true; el.classList.add("dragging"); }
-      el.scrollLeft = sl - dx;
-    });
-    window.addEventListener("pointerup", function () { down = false; el.classList.remove("dragging"); });
-    el.addEventListener("click", function (e) { if (moved) { e.preventDefault(); e.stopPropagation(); } }, true);
-    el.addEventListener("keydown", function (e) {
-      if (e.key === "ArrowRight") { el.scrollBy({ left: 400, behavior: "smooth" }); e.preventDefault(); }
-      if (e.key === "ArrowLeft") { el.scrollBy({ left: -400, behavior: "smooth" }); e.preventDefault(); }
-    });
+  // taped photos (and the enlarged one) lean toward the cursor
+  if (canHover && !reduceMotion) {
+    var trackShot = null;
+    var untrack = function () {
+      if (!trackShot) return;
+      trackShot.classList.remove("tracking");
+      trackShot.style.removeProperty("--mx"); trackShot.style.removeProperty("--my");
+      trackShot = null;
+    };
+    document.addEventListener("pointermove", function (e) {
+      var shot = e.target.closest ? e.target.closest(".jn-shot:not(.jn-shot-placeholder)") : null;
+      // in the enlarged view the whole dialog steers the photo, not just the photo itself
+      if (!shot && e.target.closest && e.target.closest(".jn-photo-viewer")) shot = $(".jn-photo-viewer .jn-shot");
+      if (shot !== trackShot) { untrack(); trackShot = shot; }
+      if (!shot) return;
+      var box = shot.closest(".jn-photo-viewer") || shot, r = box.getBoundingClientRect();
+      shot.classList.add("tracking");
+      shot.style.setProperty("--mx", Math.max(-.5, Math.min(.5, (e.clientX - r.left) / r.width - .5)).toFixed(3));
+      shot.style.setProperty("--my", Math.max(-.5, Math.min(.5, (e.clientY - r.top) / r.height - .5)).toFixed(3));
+    }, { passive: true });
+    document.addEventListener("pointerleave", untrack);
   }
+
+  /* The diary has one controlled turn at a time. Repeated input updates the
+     destination; it never reverses a leaf halfway through its animation. */
+  (function () {
+    var book = $("[data-journal]");
+    if (!book) return;
+    var pages = $$(".jn-page", book), tabs = $$("[data-jn-go]"),
+        prevB = $("[data-jn-prev]"), nextB = $("[data-jn-next]"),
+        count = $("[data-jn-count]"), pageLabel = $("[data-jn-page-label]"),
+        ribbon = $(".jn-ribbon", book), pencil = $(".jn-pencil", book),
+        viewer = $("[data-jn-photo-viewer]"), photoBody = $("[data-jn-photo-body]"), photoClose = $("[data-jn-photo-close]"),
+        mq = matchMedia("(max-width: 1080px)"), motion = matchMedia("(prefers-reduced-motion: reduce)"),
+        leaves = [], state = 0, target = 0, single = false, turning = false,
+        cancelTurn = null, resizePending = false, openShot = null, shotAnchor = null,
+        photoAnimation = null, photoClosing = false;
+
+    function shown() { return single ? [state] : [state * 2, state * 2 + 1]; }
+    function rest(i) { return i < state ? i + 1 : leaves.length - i; }
+
+    function controls() {
+      prevB.disabled = target === 0;
+      nextB.disabled = target === leaves.length - 1;
+      prevB.setAttribute("aria-label", single ? "Previous page" : "Previous project");
+      nextB.setAttribute("aria-label", single ? "Next page" : "Next project");
+      tabs.forEach(function (t, i) {
+        t.setAttribute("aria-current", i === (single ? Math.floor(target / 2) : target) ? "true" : "false");
+        t.setAttribute("aria-controls", "project-diary");
+      });
+    }
+
+    function paint() {
+      var visible = shown();
+      leaves.forEach(function (leaf, i) {
+        leaf.classList.toggle("flipped", !single && i < state);
+        leaf.classList.toggle("is-current", single && i === state);
+        leaf.classList.remove("is-turning", "is-entering", "is-leaving");
+        leaf.style.zIndex = rest(i);
+      });
+      pages.forEach(function (page, i) {
+        var hidden = visible.indexOf(i) < 0;
+        if (hidden && page.contains(document.activeElement)) book.focus({ preventScroll: true });
+        page.inert = hidden;
+        page.setAttribute("aria-hidden", String(hidden));
+      });
+      count.textContent = (single ? Math.floor(state / 2) : state) + 1;
+      pageLabel.textContent = single ? (state % 2 ? "screens · page 2 / 2" : "notes · page 1 / 2") : "";
+      controls();
+    }
+
+    // Measure natural page height without collapsing the book or moving the viewport.
+    function size() {
+      if (turning || (viewer && viewer.open)) { resizePending = true; return; }
+      book.classList.add("is-measuring");
+      // never shorter than a diary page: portrait, a little taller than wide
+      var height = Math.round((single ? book.offsetWidth : book.offsetWidth / 2) * (single ? 1.25 : 1.1));
+      pages.forEach(function (page) { height = Math.max(height, page.offsetHeight); });
+      book.style.height = Math.ceil(height) + "px";
+      book.classList.remove("is-measuring");
+      resizePending = false;
+    }
+
+    function bind() {
+      var keep = single ? target : target * 2;
+      if (cancelTurn) cancelTurn();
+      turning = false;
+      book.classList.remove("is-turning");
+      book.removeAttribute("aria-busy");
+      book.classList.add("instant");
+      pages.forEach(function (page) {
+        page.classList.remove("jn-front", "jn-back", "jn-static");
+        book.appendChild(page);
+      });
+      leaves.forEach(function (leaf) { leaf.remove(); });
+      leaves = [];
+      single = mq.matches;
+      book.classList.toggle("single", single);
+      if (!single) pages[0].classList.add("jn-static");
+      for (var i = single ? 0 : 1; i < pages.length; i += single ? 1 : 2) {
+        var leaf = document.createElement("div");
+        leaf.className = "jn-leaf";
+        pages[i].classList.add("jn-front");
+        leaf.appendChild(pages[i]);
+        if (!single && pages[i + 1]) {
+          pages[i + 1].classList.add("jn-back");
+          leaf.appendChild(pages[i + 1]);
+        }
+        book.appendChild(leaf);
+        leaves.push(leaf);
+      }
+      state = target = clamp(single ? keep : Math.floor(keep / 2), 0, leaves.length - 1);
+      paint();
+      size();
+      void book.offsetWidth;
+      book.classList.remove("instant");
+    }
+
+    function advance() {
+      if (turning || target === state) return;
+      if (motion.matches) {
+        book.classList.add("instant");
+        state = target;
+        paint();
+        void book.offsetWidth;
+        book.classList.remove("instant");
+        return;
+      }
+      var from = state, direction = target > state ? 1 : -1,
+          next = single ? target : state + direction,
+          duration = single ? 240 : (Math.abs(target - state) > 1 ? 280 : 430),
+          stringDelay = single || book.classList.contains("is-turning") ? 0 : 160,
+          leaf = leaves[single ? next : (direction > 0 ? from : next)],
+          eventName = single ? "animationend" : "transitionend", timer;
+      turning = true;
+      book.classList.add("is-turning");
+      book.setAttribute("aria-busy", "true");
+      book.style.setProperty("--jn-duration", duration + "ms");
+      book.style.setProperty("--jn-string-delay", stringDelay + "ms");
+      book.style.setProperty("--jn-direction", direction);
+      // the bookmark swings and the pencil rocks in its loop, both away from the turning page
+      [ribbon, pencil].forEach(function (el, k) {
+        if (!el) return;
+        var cls = k ? "nudge" : "sway";
+        el.style.setProperty("--dir", direction);
+        el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls);
+      });
+      // The binding clears the paper before the page begins to turn.
+      leaf.style.zIndex = leaves.length * 2 + 1;
+      leaf.classList.add("is-turning");
+      void leaf.offsetWidth;
+      if (single) {
+        leaves[from].classList.add("is-leaving");
+        leaves[from].classList.remove("is-current");
+        leaves[from].style.zIndex = leaves.length * 2;
+        leaf.classList.add("is-current", "is-entering");
+      } else {
+        leaf.classList.toggle("flipped", direction > 0);
+      }
+      state = next;
+      function cleanup() {
+        clearTimeout(timer);
+        leaf.removeEventListener(eventName, finish);
+        cancelTurn = null;
+      }
+      function finish(event) {
+        if (event && (event.target !== leaf || (single ? event.animationName !== "jn-page-in" : event.propertyName !== "transform"))) return;
+        cleanup();
+        turning = false;
+        paint();
+        if (target !== state) {
+          advance();
+        } else {
+          book.classList.remove("is-turning");
+          book.removeAttribute("aria-busy");
+          if (resizePending) size();
+        }
+      }
+      cancelTurn = cleanup;
+      leaf.addEventListener(eventName, finish);
+      // Background tabs can suppress completion events.
+      timer = setTimeout(finish, duration + stringDelay + 120);
+    }
+
+    function go(to) {
+      target = clamp(to, 0, leaves.length - 1);
+      controls();
+      advance();
+    }
+    function photoTransform(rect, full) {
+      var x = rect.left + rect.width / 2 - full.left - full.width / 2,
+          y = rect.top + rect.height / 2 - full.top - full.height / 2;
+      return "translate3d(" + x + "px," + y + "px,0) scale(" + rect.width / full.width + "," + rect.height / full.height + ")";
+    }
+    function stopPhotoAnimation() {
+      if (photoAnimation) {
+        photoAnimation.onfinish = null;
+        photoAnimation.cancel();
+        photoAnimation = null;
+      }
+      viewer.classList.remove("is-animating");
+    }
+    function animatePhoto(frames, duration, done) {
+      if (motion.matches || !viewer.animate) { done(); return; }
+      viewer.classList.add("is-animating");
+      photoAnimation = viewer.animate(frames, {
+        duration: duration, easing: "cubic-bezier(.22, .7, .25, 1)", fill: "both"
+      });
+      photoAnimation.onfinish = function () { stopPhotoAnimation(); done(); };
+    }
+    function openPhoto(shot) {
+      if (!viewer || !photoBody || !photoClose || viewer.open || turning) return;
+      var source = shot.getBoundingClientRect();
+      // Keep the layout and SVG IDs stable while the original photo is enlarged.
+      shotAnchor = document.createElement("div");
+      shotAnchor.className = "jn-shot jn-shot-placeholder";
+      shotAnchor.style.height = shot.offsetHeight + "px";
+      shotAnchor.setAttribute("aria-hidden", "true");
+      shot.parentNode.insertBefore(shotAnchor, shot);
+      openShot = shot;
+      photoClosing = false;
+      photoBody.appendChild(shot);
+      viewer.setAttribute("aria-label", shot.getAttribute("title") || "Enlarged project photo");
+      viewer.showModal();
+      shot.setAttribute("aria-label", "Close enlarged photo");
+      photoClose.focus({ preventScroll: true });
+      var full = viewer.getBoundingClientRect();
+      viewer.classList.add("is-visible");
+      animatePhoto([
+        { transform: photoTransform(source, full) },
+        { transform: "translate3d(0,0,0) scale(1,1)" }
+      ], 320, function () {});
+    }
+    function closePhoto() {
+      if (!viewer.open || photoClosing) return;
+      photoClosing = true;
+      // A second click during opening reverses from the current visual position.
+      var current = viewer.getBoundingClientRect();
+      stopPhotoAnimation();
+      var full = viewer.getBoundingClientRect(), destination = shotAnchor.getBoundingClientRect();
+      viewer.classList.remove("is-visible");
+      animatePhoto([
+        { transform: photoTransform(current, full) },
+        { transform: photoTransform(destination, full) }
+      ], 240, finishPhotoClose);
+    }
+    function restorePhoto() {
+      if (viewer.open || !openShot || !shotAnchor) return;
+      stopPhotoAnimation();
+      viewer.classList.remove("is-visible");
+      photoClosing = false;
+      openShot.classList.add("jn-shot-restoring");
+      shotAnchor.parentNode.insertBefore(openShot, shotAnchor);
+      shotAnchor.remove();
+      openShot.setAttribute("aria-label", "Enlarge " + openShot.getAttribute("title"));
+      openShot.focus({ preventScroll: true });
+      void openShot.offsetWidth;
+      openShot.classList.remove("jn-shot-restoring");
+      openShot = shotAnchor = null;
+      size();
+    }
+    function finishPhotoClose() {
+      viewer.close();
+      // Native close events are queued; restore the thumbnail before the next paint.
+      restorePhoto();
+    }
+    if (viewer) {
+      viewer.addEventListener("click", function (event) {
+        if (event.target === viewer || event.target.closest(".jn-shot, .jn-photo-close")) closePhoto();
+      });
+      viewer.addEventListener("cancel", function (event) {
+        event.preventDefault();
+        closePhoto();
+      });
+      viewer.addEventListener("keydown", function (event) {
+        if (event.target.closest(".jn-shot") && (event.key === "Enter" || event.key === " ")) {
+          event.preventDefault();
+          closePhoto();
+        }
+      });
+      viewer.addEventListener("close", restorePhoto);
+    }
+    var touch = null, suppressClickUntil = 0;
+    book.addEventListener("click", function (event) {
+      if (Date.now() < suppressClickUntil || event.target.closest("a, button")) return;
+      var shot = event.target.closest(".jn-shot");
+      if (shot) { openPhoto(shot); return; }
+      if (String(window.getSelection())) return;
+      var bounds = book.getBoundingClientRect(), x = event.clientX - bounds.left;
+      go(target + (x < bounds.width / 2 ? -1 : 1));
+    });
+    [ribbon, pencil].forEach(function (el) {
+      if (el) el.addEventListener("animationend", function (e) { if (e.target === el || e.target.classList.contains("jn-ribbon-tail")) el.classList.remove("sway", "nudge"); });
+    });
+    book.addEventListener("keydown", function (event) {
+      if (event.target.closest("input, textarea, select, [contenteditable]")) return;
+      if (event.target.classList.contains("jn-shot") && (event.key === "Enter" || event.key === " ")) {
+        openPhoto(event.target);
+        event.preventDefault();
+        return;
+      }
+      if (event.key === "ArrowRight") go(target + 1);
+      else if (event.key === "ArrowLeft") go(target - 1);
+      else if (event.key === "Home") go(0);
+      else if (event.key === "End") go(leaves.length - 1);
+      else return;
+      event.preventDefault();
+    });
+    book.addEventListener("touchstart", function (event) {
+      touch = event.touches.length === 1 && !event.target.closest("a, button") ?
+        { x: event.touches[0].clientX, y: event.touches[0].clientY } : null;
+    }, { passive: true });
+    book.addEventListener("touchend", function (event) {
+      if (!touch) return;
+      var dx = event.changedTouches[0].clientX - touch.x,
+          dy = event.changedTouches[0].clientY - touch.y;
+      touch = null;
+      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+        suppressClickUntil = Date.now() + 450;
+        go(target + (dx < 0 ? 1 : -1));
+      }
+    }, { passive: true });
+    book.addEventListener("touchcancel", function () { touch = null; }, { passive: true });
+    prevB.addEventListener("click", function () { go(target - 1); });
+    nextB.addEventListener("click", function () { go(target + 1); });
+    tabs.forEach(function (tab, i) { tab.addEventListener("click", function () { go(single ? i * 2 : i); }); });
+    if (mq.addEventListener) mq.addEventListener("change", bind); else mq.addListener(bind);
+    function motionChanged() {
+      if (!motion.matches) return;
+      bind();
+      if (photoAnimation) {
+        stopPhotoAnimation();
+        if (photoClosing) finishPhotoClose();
+      }
+    }
+    if (motion.addEventListener) motion.addEventListener("change", motionChanged); else motion.addListener(motionChanged);
+    var resizeTimer;
+    window.addEventListener("resize", function () { clearTimeout(resizeTimer); resizeTimer = setTimeout(size, 120); });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(size);
+    bind();
+  })();
 
   // parks / ui focus
   var work = $("#work"), toggle = $(".view-toggle");
@@ -730,11 +1131,11 @@
   function buildTopo() {
     var r = rng(4242), W = 1440, H = 900, s = "";
     // peaks and place names, all in the local dialect (the contours themselves are drawn on a canvas)
-    var peaks = [["Mount Converge", "8,320 EPOCHS", 250, 180], ["P-Value Peak", "8,300 EPOCHS", 470, 110], ["Epoch Summit", "8,240 EPOCHS", 1020, 120], ["Mount Baseline", "8,130 EPOCHS", 1250, 640], ["Kernel Crag", "8,080 EPOCHS", 160, 470], ["Early Stopping Point", "8,060 EPOCHS", 880, 760]];
+    var peaks = [["Granite Peak", "1,840 M", 250, 180], ["Eagle Crest", "1,760 M", 470, 110], ["North Summit", "2,010 M", 1020, 120], ["Cedar Knoll", "1,120 M", 1250, 640], ["Hemlock Crag", "1,390 M", 160, 470], ["Lookout Point", "980 M", 880, 760]];
     peaks.forEach(function (p) {
       s += '<path d="M' + p[2] + " " + (p[3] - 7) + 'l7 12h-14z" fill="currentColor"/><text x="' + (p[2] + 12) + '" y="' + (p[3] + 2) + '" class="tp">' + p[0] + '</text><text x="' + (p[2] + 12) + '" y="' + (p[3] + 12) + '" class="tp s">' + p[1] + "</text>";
     });
-    var areas = [["HYPERPARAMETER HILLS", 120, 104, -6], ["OVERFIT RIDGE", 600, 96, 0], ["VALIDATION VALLEY", 1150, 236, 4], ["LOCAL MINIMA LAKE", 200, 830, 0], ["NaN FLATS", 60, 330, 0], ["BIAS–VARIANCE PASS", 1210, 790, -3], ["OUTLIER OUTCROP", 700, 812, 0], ["CONFUSION MATRIX MESA", 1180, 100, 2], ["BATCH NORM BASIN", 420, 700, -2]];
+    var areas = [["HEMLOCK HILLS", 120, 104, -6], ["OVERFIT RIDGE", 600, 96, 0], ["VALIDATION VALLEY", 1150, 236, 4], ["LOST LAKE", 200, 830, 0], ["PINE FLATS", 60, 330, 0], ["COPPER PASS", 1210, 790, -3], ["BOULDER OUTCROP", 700, 812, 0], ["WEST MESA", 1180, 100, 2], ["BIRCH BASIN", 420, 700, -2]];
     areas.forEach(function (a) { s += '<text x="' + a[1] + '" y="' + a[2] + '" class="ta" transform="rotate(' + a[3] + " " + a[1] + " " + a[2] + ')">' + a[0] + "</text>"; });
     var style = "<style>.tp{font:700 10px 'Josefin Sans',sans-serif;letter-spacing:.14em;fill:currentColor;text-transform:uppercase}.tp.s{font-size:8px}.ta{font:700 13px 'Josefin Sans',sans-serif;letter-spacing:.34em;fill:currentColor;opacity:.85}</style>";
     topoHost.innerHTML = '<canvas class="contours" aria-hidden="true"></canvas>' + svg("0 0 1440 900", style + s, "xMidYMid slice");
@@ -791,17 +1192,20 @@
   var contourTimer;
   function drawContours() {
     var cv = topoHost && $(".contours", topoHost);
-    if (!cv) return;
-    var box = topo.getBoundingClientRect(), W = Math.ceil(box.width), H = Math.ceil(box.height);
+    if (cv) paintContours(cv, topo, "--topo-ink", 0, 0);
+  }
+  // marching squares over the warped terrain, sized to `host`; ox/oy shift the terrain so each map is its own place
+  function paintContours(cv, host, inkVar, ox, oy) {
+    var box = host.getBoundingClientRect(), W = Math.ceil(box.width), H = Math.ceil(box.height);
     var dpr = Math.min(window.devicePixelRatio || 1, 2), ctx = cv.getContext("2d");
     cv.width = W * dpr; cv.height = H * dpr; cv.style.width = W + "px"; cv.style.height = H + "px";
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    var css = getComputedStyle(topo), ink = css.getPropertyValue("--topo-ink").trim() || "#1a1d1a";
+    var css = getComputedStyle(host), ink = css.getPropertyValue(inkVar).trim() || "#1a1d1a";
 
     var C = 6, cols = Math.ceil(W / C) + 1, rows = Math.ceil(H / C) + 1, S = 1 / 230;  // S: terrain features per px
     var field = new Float32Array(cols * rows), lo = 9, hi = -9;
     for (var j = 0; j < rows; j++) for (var i = 0; i < cols; i++) {
-      var v = terrain(i * C * S, j * C * S); field[j * cols + i] = v;
+      var v = terrain(i * C * S + ox, j * C * S + oy); field[j * cols + i] = v;
       if (v < lo) lo = v; if (v > hi) hi = v;
     }
     // survey grid
@@ -951,43 +1355,7 @@
     });
   }
 
-  /* ── education: two base camps, each with its own landscape ─── */
-  function campArt(kind) {
-    var r = rng(kind === "pune" ? 560 : 70), W = 600, H = 190, s = "";
-    var ridge = function (y, amp, flat, col, cls) {
-      var pts = [[0, H]], x = 0, cy = y;
-      while (x <= W) {
-        if (flat) {   // deccan plateau: long flat tops broken by steep scarps
-          var run = 50 + r() * 90, drop = (r() - 0.5) * amp;
-          pts.push([x, cy], [x + run, cy + (r() - 0.5) * 3]); x += run + 10; cy = y + drop; pts.push([x, cy]);
-        } else {      // coast mountains: sharp peaks
-          x += 18 + r() * 34; pts.push([x, y + (r() - 0.5) * amp * 2 - (r() < 0.3 ? amp : 0)]);
-        }
-      }
-      pts.push([W, H]);
-      return '<path class="ridge ' + cls + '" d="' + poly(pts) + '" fill="' + col + '"/>';
-    };
-    if (kind === "pune") {
-      s += '<defs><linearGradient id="skyP" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7d9a0"/><stop offset="1" stop-color="#f2a56c"/></linearGradient></defs><rect width="600" height="190" fill="url(#skyP)"/>';
-      s += '<circle cx="430" cy="70" r="30" fill="#fff1c9" opacity=".95"/>';
-      s += ridge(95, 26, true, "#dc8f68", "r1") + ridge(122, 24, true, "#b9644c", "r2") + ridge(150, 18, true, "#7d3b33", "r3");
-      s += '<path d="M0 190 L0 172 Q150 160 300 170 T600 166 L600 190 Z" fill="#4a2522"/>';
-      for (var k = 0; k < 7; k++) { var tx = 30 + r() * 540; s += '<path d="M' + f(tx) + ' 172 v-20" stroke="#4a2522" stroke-width="2"/><circle cx="' + f(tx) + '" cy="150" r="' + f(7 + r() * 5) + '" fill="#4a2522"/>'; }
-    } else {
-      s += '<defs><linearGradient id="skyV" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d5e6e8"/><stop offset="1" stop-color="#a7c8cf"/></linearGradient></defs><rect width="600" height="190" fill="url(#skyV)"/>';
-      s += '<circle cx="150" cy="58" r="22" fill="#f4f8f3" opacity=".9"/>';
-      s += ridge(84, 26, false, "#9db8c2", "r1");
-      s += '<g class="ridge r1">' + (function () { var t = ""; for (var i = 0; i < 9; i++) { var px = 20 + i * 70 + r() * 20; t += '<path d="M' + f(px) + ' ' + f(70 + r() * 18) + 'l10 14h-20z" fill="#f4f8f8" opacity=".85"/>'; } return t; })() + "</g>";
-      s += ridge(118, 18, false, "#56838f", "r2");
-      s += '<rect y="142" width="600" height="48" fill="#2f5f6e"/>';
-      for (var w = 0; w < 14; w++) s += '<path d="M' + f(r() * 600) + ' ' + f(150 + r() * 30) + 'h' + f(12 + r() * 30) + '" stroke="#cfe3e6" stroke-width="1.5" opacity=".55"/>';
-      var trees = "";
-      for (var p = 0; p < 22; p++) { var px2 = r() * 600, ph = 26 + r() * 30; trees += '<path d="M' + f(px2) + ' ' + f(190 - ph - 12) + 'l' + f(ph * 0.22) + ' ' + f(ph) + 'h' + f(-ph * 0.44) + 'z" fill="#1c3833"/>'; }
-      s += '<g class="ridge r3"><path d="M0 190 L0 176 Q200 166 400 174 T600 170 L600 190 Z" fill="#1c3833"/>' + trees + "</g>";
-    }
-    return svg("0 0 600 190", s, "xMidYMax slice");
-  }
-  $$("[data-camp-art]").forEach(function (el) { el.innerHTML = campArt(el.getAttribute("data-camp-art")); });
+  /* ── education: two base camps, revealed as they scroll in ─── */
   var campsEl = $(".camps");
   if (campsEl) {
     if ("IntersectionObserver" in window && !reduceMotion) {
@@ -995,6 +1363,144 @@
       cio.observe(campsEl);
     } else campsEl.classList.add("in");
   }
+
+  /* ── entrance animations: anything marked data-anim gets .in once it scrolls into view ── */
+  (function () {
+    var els = $$("[data-anim]");
+    if (!("IntersectionObserver" in window)) { els.forEach(function (e) { e.classList.add("in"); }); return; }
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        var el = e.target; el.classList.add("in"); io.unobserve(el);
+        if (el.classList.contains("sp")) setTimeout(function () { el.classList.add("settled"); }, 1100);
+      });
+    }, { threshold: .18, rootMargin: "0px 0px -8% 0px" });
+    els.forEach(function (e) { io.observe(e); });
+  })();
+
+  /* ── trusted-by carousel: the logo set is doubled so the loop is seamless ── */
+  (function () {
+    var row = $("[data-marquee]");
+    if (!row) return;
+    var items = $$("li", row);
+    while (row.scrollWidth < window.innerWidth * 1.1 && items.length) items.forEach(function (li) { var c = li.cloneNode(true); c.setAttribute("aria-hidden", "true"); $$("a", c).forEach(function (a) { a.tabIndex = -1; }); row.appendChild(c); });
+    $$("li", row).forEach(function (li) { var c = li.cloneNode(true); c.setAttribute("aria-hidden", "true"); $$("a", c).forEach(function (a) { a.tabIndex = -1; }); row.appendChild(c); });
+    row.style.setProperty("--dur", Math.round(row.scrollWidth / 2 / 45) + "s");
+  })();
+
+  /* ── services: faint contour lines behind the trailhead ── */
+  (function () {
+    var sv = $("#services"), cv = $("[data-svc-contours]");
+    if (!sv || !cv) return;
+    var paint = function () { paintContours(cv, sv, "--svc-ink", 3.7, 9.2); }, t;
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(paint); else paint();
+    window.addEventListener("resize", function () { clearTimeout(t); t = setTimeout(paint, 200); });
+  })();
+
+  (function () {
+    var card = $("[data-tilt]");
+    if (!card || !canHover || reduceMotion) return;
+    card.addEventListener("pointermove", function (e) {
+      var r = card.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
+      card.style.transform = "rotate(0deg) perspective(900px) rotateY(" + f(x * 8) + "deg) rotateX(" + f(-y * 6) + "deg)";
+    });
+    card.addEventListener("pointerleave", function () { card.style.transform = ""; });
+  })();
+
+  /* ── services: the signpost boards pick a route; the card redraws its profile ── */
+  (function () {
+    var th = $("[data-trailhead]"), card = $("[data-route-card]"), boards = $$("[data-route]");
+    var ROUTES = [];
+    try { ROUTES = JSON.parse(($("[data-routes]") || {}).textContent || "[]"); } catch (e) {}
+    if (!th || !card || !ROUTES.length) return;
+    var BLAZE = { circle: '<circle cx="12" cy="12" r="8"/>', triangle: '<path d="M12 4l8.5 15h-17z"/>', square: '<rect x="5" y="5" width="14" height="14" rx="1"/>',
+      diamond: '<path d="M12 3l9 9-9 9-9-9z"/>', hexagon: '<path d="M12 3l7.8 4.5v9L12 21l-7.8-4.5v-9z"/>' };
+    var fig = $(".rc-prof", card), prof = $("[data-rc-prof]", card), cur = -1;
+    // an uphill route: each stage of the work sits a little higher, with a ridge line of rough ground between them
+    function profile(i) {
+      var R = ROUTES[i], r = rng(900 + i * 37), W = 640, H = 170, n = R.pts.length, pts = [], wps = [];
+      var stageX = function (k) { return 36 + k * (W - 72) / (n - 1); };
+      var stageY = function (k) { return 140 - k * (100 / (n - 1)) - (k === n - 1 ? 8 : (r() - .5) * 14); };
+      var ys = []; for (var k = 0; k < n; k++) ys.push(stageY(k));
+      for (var x = 0; x <= W; x += 8) {
+        var seg = Math.min(n - 2, Math.max(0, Math.floor((x - 36) / ((W - 72) / (n - 1))))), t = Math.max(0, Math.min(1, (x - stageX(seg)) / (stageX(seg + 1) - stageX(seg))));
+        var e = (1 - Math.cos(t * Math.PI)) / 2, y = ys[seg] * (1 - e) + ys[seg + 1] * e - Math.sin(t * Math.PI) * (6 + r() * 10) + (r() - .5) * 5;
+        if (x < 36) y = ys[0] + (36 - x) * .15; if (x > W - 36) y = ys[n - 1] - (x - (W - 36)) * .08;
+        pts.push([x, y]);
+      }
+      var line = "M" + pts.map(function (p) { return f(p[0]) + " " + f(p[1]); }).join("L");
+      var s = '<defs><pattern id="rc-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><rect width="6" height="6" fill="#e9dfc2"/><path d="M0 0v6" stroke="#cdbd93" stroke-width="1.4"/></pattern></defs>' +
+        '<path class="land" d="' + line + "L" + W + " " + H + "L0 " + H + 'Z"/><path class="ridge" d="' + line + '"/>' +
+        '<path class="trail" d="' + pts.map(function (p, q) { return (q ? "L" : "M") + f(p[0]) + " " + f(p[1] - 10); }).join("") + '"/>';
+      for (k = 0; k < n; k++) {
+        var wx = stageX(k), wy = ys[k] - 10;
+        s += '<g class="wp' + (k === n - 1 ? " end" : "") + '" style="--i:' + k + '"><line x1="' + f(wx) + '" y1="' + f(wy - 22) + '" x2="' + f(wx) + '" y2="' + f(wy - 6) + '"/><circle cx="' + f(wx) + '" cy="' + f(wy) + '" r="5.5"/></g>';
+        wps.push('<span class="wp-lb" style="--i:' + k + ";left:" + f(wx / W * 100) + "%;top:calc(12px + " + f((wy - 24) / H * 100) + '%)"><i>' + (k + 1) + "</i>" + R.pts[k] + "</span>");
+      }
+      prof.innerHTML = s;
+      $$(".wp-lb", fig).forEach(function (el) { el.remove(); });
+      fig.insertAdjacentHTML("beforeend", wps.join(""));
+    }
+    function fill(i) {
+      var R = ROUTES[i];
+      $("[data-rc-num]", card).textContent = "Route " + ("0" + (i + 1)).slice(-2);
+      $("[data-rc-blaze]", card).innerHTML = BLAZE[R.blaze] || "";
+      $("[data-rc-name]", card).textContent = R.name;
+      $("[data-rc-tag]", card).textContent = R.tag;
+      $("[data-rc-get]", card).innerHTML = R.get.map(function (g) { return "<li>" + g + "</li>"; }).join("");
+      $("[data-rc-stack]", card).textContent = R.stack;
+      $("[data-rc-best]", card).textContent = R.best;
+      card.setAttribute("aria-labelledby", boards[i].id);
+      profile(i);
+    }
+    function pick(i, instant) {
+      if (i === cur) return;
+      cur = i;
+      boards.forEach(function (b, k) { b.classList.toggle("on", k === i); b.setAttribute("aria-selected", k === i ? "true" : "false"); b.tabIndex = k === i ? 0 : -1; });
+      if (instant || reduceMotion) { fill(i); card.classList.remove("draw"); void card.offsetWidth; card.classList.add("draw"); return; }
+      card.classList.add("swap");
+      setTimeout(function () { fill(i); card.classList.remove("swap", "draw"); void card.offsetWidth; card.classList.add("draw"); }, 230);
+    }
+    boards.forEach(function (b, k) {
+      b.addEventListener("click", function () { pick(k); });
+      if (canHover) b.addEventListener("mouseenter", function () { pick(k); });
+      b.addEventListener("keydown", function (e) {
+        var d = e.key === "ArrowDown" || e.key === "ArrowRight" ? 1 : e.key === "ArrowUp" || e.key === "ArrowLeft" ? -1 : 0;
+        if (!d) return; e.preventDefault();
+        var n = (k + d + boards.length) % boards.length; boards[n].focus(); pick(n);
+      });
+    });
+    pick(0, true);
+    var ct = $(".camps-trail");
+    if (ct && "IntersectionObserver" in window) new IntersectionObserver(function (es, io) { if (es[0].isIntersecting) { ct.classList.add("in"); io.disconnect(); } }, { threshold: .4 }).observe(ct);
+  })();
+
+  /* ── reviews: each register row is cloned once so the drift loops seamlessly;
+     speed is set from its width so both rows move at the same pace ── */
+  $$("[data-reg-row]").forEach(function (row) {
+    var track = $(".reg-track", row), slips = $$(".reg-slip", track);
+    while (track.scrollWidth < window.innerWidth * 1.2 && slips.length) slips.forEach(function (s) { var c = s.cloneNode(true); c.setAttribute("aria-hidden", "true"); track.appendChild(c); });
+    $$(".reg-slip", track).forEach(function (s) { var c = s.cloneNode(true); c.setAttribute("aria-hidden", "true"); track.appendChild(c); });
+    track.style.setProperty("--dur", Math.round(track.scrollWidth / 2 / 38) + "s");
+  });
+
+  /* ── footer: the site as a topo trail map, in the experience map's colours ── */
+  (function () {
+    var foot = $(".footer"), cv = $("[data-ft-contours]"), map = $("[data-trailmap]"), top = $("[data-to-top]");
+    var panel = $(".tm-panel"), paint = function () { if (cv && panel) paintContours(cv, panel, "--mp-ink", 7.3, 4.1); };
+    paint();
+    var t;
+    window.addEventListener("resize", function () { clearTimeout(t); t = setTimeout(paint, 200); });
+    new MutationObserver(paint).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(paint);
+    if (map) {
+      if ("IntersectionObserver" in window) new IntersectionObserver(function (es, io) {
+        if (es[0].isIntersecting) { map.classList.add("in"); io.disconnect(); }
+      }, { threshold: .35 }).observe(map);
+      else map.classList.add("in");
+    }
+    if (top) top.addEventListener("click", function () { window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" }); });
+  })();
 
   /* ── toolkit: a tree-ring cross-section ─────────────────────── */
   var ringsEl = $(".rings"), sliceHost = $("[data-slice]"), sliceTip = $("[data-slice-tip]");
@@ -1108,34 +1614,6 @@
       var rio = new IntersectionObserver(function (es) { if (es[0].isIntersecting) { ringsEl.classList.add("in"); rio.disconnect(); } }, { threshold: 0.25 });
       rio.observe(ringsEl);
     } else ringsEl.classList.add("in");
-  }
-
-  /* ── points of interest ────────────────────────────────── */
-  var patchWrap = $("[data-patches]"), note = $("[data-patch-note]");
-  if (patchWrap) {
-    var patches = $$(".patch", patchWrap);
-    var show = function (p) {
-      patchWrap.classList.add("focus");
-      patches.forEach(function (o) { o.classList.toggle("active", o === p); });
-      note.textContent = p.getAttribute("data-note");
-      if (window.innerWidth > 800) {
-        var wr = patchWrap.getBoundingClientRect(), pr = p.getBoundingClientRect(), right = pr.left + pr.width / 2 > wr.left + wr.width / 2;
-        note.style.left = (right ? pr.left - wr.left - 20 : pr.right - wr.left + 20) + "px";
-        note.style.top = (pr.top - wr.top + pr.height / 2) + "px";
-        note.style.bottom = "auto";
-        note.style.transform = "translate(" + (right ? "-100%" : "0") + ", -50%) rotate(-5deg)";
-        note.style.textAlign = right ? "right" : "left";
-      } else { note.style.left = ""; note.style.top = ""; note.style.bottom = ""; note.style.transform = ""; note.style.textAlign = "center"; }
-      note.classList.add("show");
-    };
-    var hide = function () { patchWrap.classList.remove("focus"); patches.forEach(function (o) { o.classList.remove("active"); }); note.classList.remove("show"); };
-    patches.forEach(function (p) {
-      p.addEventListener("mouseenter", function () { show(p); });
-      p.addEventListener("focus", function () { show(p); });
-      p.addEventListener("click", function () { p.classList.contains("active") ? hide() : show(p); });
-    });
-    patchWrap.addEventListener("mouseleave", hide);
-    patches.forEach(function (p) { p.addEventListener("blur", hide); });
   }
 
   /* ── signpost: live distances to each stop ─────────────── */
