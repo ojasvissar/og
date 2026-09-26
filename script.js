@@ -271,7 +271,9 @@
     // and as a last resort when it nears the viewport
     var idle = window.requestIdleCallback || function (fn) { return setTimeout(fn, 1200); };
     var soon = function () { idle(load, { timeout: 3000 }); };
-    if (document.readyState === "complete") soon(); else window.addEventListener("load", soon, { once: true });
+    // wait a few seconds after load so it doesn't compete with the hero's own entrance
+    var later = function () { setTimeout(soon, 4000); };
+    if (document.readyState === "complete") later(); else window.addEventListener("load", later, { once: true });
     $$('a[href="#book"]').forEach(function (a) { a.addEventListener("pointerenter", load, { once: true }); a.addEventListener("click", load); });
     if (location.hash === "#book") load();
     if ("IntersectionObserver" in window) {
@@ -1409,6 +1411,15 @@
       cio.observe(campsEl);
     } else campsEl.classList.add("in");
   }
+
+  /* ── performance: pause the looping animations of any section that's scrolled out of view ── */
+  (function () {
+    if (!("IntersectionObserver" in window)) return;
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { e.target.classList.toggle("is-off", !e.isIntersecting); });
+    }, { rootMargin: "200px 0px" });
+    $$(".hero, .trusted, #services, #reviews, #experience, #book, .footer").forEach(function (el) { io.observe(el); });
+  })();
 
   /* ── entrance animations: anything marked data-anim gets .in once it scrolls into view ── */
   (function () {
