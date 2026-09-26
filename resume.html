@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Résumé · Ojasv Issar</title>
+<meta name="description" content="Résumé of Ojasv Issar, data scientist and AI/ML engineer in Vancouver, BC." />
+<meta name="theme-color" content="#075056" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23232d1f'/%3E%3Cpath d='M7 22l6-9 3 4 3-6 6 11z' fill='%23f7f0dc'/%3E%3C/svg%3E" />
+<script>
+  (function () {
+    var r = document.documentElement, t, h = new Date().getHours();
+    try { t = sessionStorage.getItem("og-theme"); } catch (e) {}
+    if (t !== "day" && t !== "night") t = h >= 7 && h < 19 ? "day" : "night";
+    r.setAttribute("data-theme", t);
+  })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=DM+Mono:wght@400;500&family=Josefin+Sans:wght@400;600;700&family=Caveat:wght@500;700&display=swap" rel="stylesheet" />
+<style>
+  :root { --bg: #075056; --ink: #e4eef0; --accent: #ff5b04; --paper: #fbf8ee; --btn: #f4ecd2; --btn-ink: #1d2619; }
+  :root[data-theme="night"] { --bg: #16232a; --ink: #ff5b04; --accent: #e4eef0; --btn: #d9a932; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { min-height: 100%; }
+  body { min-height: 100vh; background: var(--bg); color: #f4f1e6; font-family: "Josefin Sans", "Futura", sans-serif; overflow-x: clip; }
+  a { color: inherit; text-decoration: none; }
+  .map { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: .75; }
+  .labels { position: fixed; inset: 0; z-index: 0; pointer-events: none; font: 700 12px "Josefin Sans", sans-serif; letter-spacing: .34em; text-transform: uppercase; color: var(--ink); opacity: .7; }
+  .labels span { position: absolute; white-space: nowrap; }
+  .wrap { position: relative; z-index: 1; max-width: 1000px; margin: 0 auto; padding: 26px 20px 60px; }
+  /* the ranger's toolbar */
+  .bar { display: flex; align-items: center; justify-content: space-between; gap: 12px 18px; flex-wrap: wrap; padding: 8px 8px 8px 10px; border-radius: 12px;
+    background: rgba(247, 241, 224, .92); color: #232b1c; box-shadow: 0 4px 0 rgba(0, 0, 0, .12), 0 18px 34px -18px rgba(0, 0, 0, .6);
+    -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); animation: drop .7s cubic-bezier(.22, 1, .36, 1) both; }
+  .back { display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px 7px; border-radius: 7px; font: 700 11px "Josefin Sans", sans-serif; letter-spacing: .18em; text-transform: uppercase; transition: background-color .2s; }
+  .back:hover { background: rgba(35, 43, 28, .08); }
+  .title { display: flex; align-items: baseline; gap: 12px; }
+  .title b { font: 400 20px "Bowlby One", sans-serif; letter-spacing: .04em; text-transform: uppercase; }
+  .title span { font: 500 11px "DM Mono", monospace; letter-spacing: .08em; color: #6f6a58; }
+  .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px 8px; border-radius: 7px; border: 1.5px solid #232b1c; font: 700 11px "Josefin Sans", sans-serif; letter-spacing: .16em; text-transform: uppercase;
+    transition: background-color .2s, color .2s, transform .25s cubic-bezier(.22, 1, .36, 1); }
+  .btn svg { width: 15px; height: 15px; margin-top: -2px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .btn:hover { transform: translateY(-2px); background: rgba(35, 43, 28, .08); }
+  .btn.solid { background: #1d2619; border-color: #1d2619; color: #f4ecd2; }
+  .btn.solid:hover { background: #a8481f; border-color: #a8481f; }
+  /* the sheet, pinned to the map */
+  .sheet { position: relative; margin: 34px auto 0; max-width: 850px; padding: 10px; border-radius: 4px; background: var(--paper);
+    box-shadow: 0 2px 0 rgba(0, 0, 0, .08), 0 40px 60px -30px rgba(0, 0, 0, .7); animation: rise .9s cubic-bezier(.22, 1, .36, 1) .15s both; }
+  .sheet::before, .sheet::after { content: ""; position: absolute; top: -12px; width: 90px; height: 26px; background: rgba(214, 196, 150, .8);
+    clip-path: polygon(0 10%, 6% 0, 94% 4%, 100% 12%, 100% 90%, 94% 100%, 6% 96%, 0 88%); }
+  .sheet::before { left: 40px; transform: rotate(-4deg); } .sheet::after { right: 40px; transform: rotate(3deg); }
+  .pages canvas { display: block; width: 100%; height: auto; }
+  .pages canvas + canvas { margin-top: 10px; }
+  .loading { display: grid; place-items: center; aspect-ratio: 8.5 / 11; font: 500 20px "Caveat", cursive; color: #6f6a58; }
+  .fallback { display: none; aspect-ratio: 8.5 / 11; width: 100%; border: 0; }
+  .note { margin-top: 18px; text-align: center; font: 500 18px "Caveat", cursive; color: #f4f1e6; opacity: .85; }
+  :root[data-theme="night"] .note { color: #e4eef0; }
+  @keyframes drop { from { opacity: 0; transform: translateY(-14px); } }
+  @keyframes rise { from { opacity: 0; transform: translateY(40px) rotate(-1.5deg); } }
+  @media (max-width: 700px) {
+    .bar { justify-content: center; }
+    .title { order: -1; width: 100%; justify-content: center; }
+    .btn span.long { display: none; }
+    .sheet { margin-top: 26px; padding: 6px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .bar, .sheet { animation: none; } }
+</style>
+</head>
+<body>
+<canvas class="map" data-map aria-hidden="true"></canvas>
+<div class="labels" data-labels aria-hidden="true"></div>
+<main class="wrap">
+  <header class="bar">
+    <a class="back" href="./"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M15 5l-7 7 7 7"/></svg>Back to the trail</a>
+    <p class="title"><b>Résumé</b><span>updated 09.2026</span></p>
+    <nav class="actions" aria-label="résumé actions">
+      <a class="btn" href="assets/Ojasv-Issar-Resume.pdf" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6 M20 4l-9 9 M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>Open<span class="long">&nbsp;in new tab</span></a>
+      <a class="btn solid" href="assets/Ojasv-Issar-Resume.pdf" download="Ojasv-Issar-Resume.pdf"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11 M7 10l5 5 5-5 M5 20h14"/></svg>Download</a>
+    </nav>
+  </header>
+  <article class="sheet" aria-label="Ojasv Issar résumé">
+    <div class="pages" data-pages><p class="loading">unrolling the map…</p></div>
+    <iframe class="fallback" data-fallback title="Ojasv Issar résumé (PDF)"></iframe>
+  </article>
+  <p class="note">questions about anything on here? <a href="./#book" style="text-decoration:underline;text-underline-offset:3px">send me a postcard</a></p>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+(function () {
+  var PDF = "assets/Ojasv-Issar-Resume.pdf";
+  /* the résumé itself, drawn crisply with pdf.js; a plain PDF frame if that fails */
+  var host = document.querySelector("[data-pages]"), fb = document.querySelector("[data-fallback]"), doc = null, t;
+  function fail() { host.style.display = "none"; fb.src = PDF + "#view=FitH"; fb.style.display = "block"; }
+  function draw() {
+    if (!doc) return;
+    var w = host.clientWidth, dpr = Math.min(window.devicePixelRatio || 1, 2.5), out = [];
+    var chain = Promise.resolve();
+    for (var i = 1; i <= doc.numPages; i++) (function (n) {
+      chain = chain.then(function () { return doc.getPage(n); }).then(function (pg) {
+        var v0 = pg.getViewport({ scale: 1 }), v = pg.getViewport({ scale: w / v0.width * dpr }), c = document.createElement("canvas");
+        c.width = v.width; c.height = v.height; out.push(c);
+        return pg.render({ canvasContext: c.getContext("2d"), viewport: v }).promise;
+      });
+    })(i);
+    chain.then(function () { host.innerHTML = ""; out.forEach(function (c) { host.appendChild(c); }); }).catch(fail);
+  }
+  if (window.pdfjsLib) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    pdfjsLib.getDocument(PDF).promise.then(function (d) { doc = d; draw(); }).catch(fail);
+  } else fail();
+  window.addEventListener("resize", function () { clearTimeout(t); t = setTimeout(draw, 250); });
+
+  /* the whole page is a contour map, the same survey style as the work-experience section */
+  var rng = function (seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; };
+  var HR = rng(9017), HASH = []; for (var n = 0; n < 512; n++) HASH.push(HR());
+  function vnoise(x, y) {
+    var xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi, h = function (i, j) { return HASH[((i * 73856093) ^ (j * 19349663)) & 511]; };
+    var u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf), a = h(xi, yi), b = h(xi + 1, yi), c = h(xi, yi + 1), d = h(xi + 1, yi + 1);
+    return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+  }
+  function fbm(x, y, o) { var s = 0, amp = .5, fr = 1; for (var i = 0; i < o; i++) { s += amp * vnoise(x * fr, y * fr); fr *= 2.03; amp *= .5; } return s; }
+  function terrain(x, y) { var wx = fbm(x + 3.1, y + 7.7, 3), wy = fbm(x + 11.3, y + 2.9, 3); return fbm(x + 1.6 * wx, y + 1.6 * wy, 5); }
+  var cv = document.querySelector("[data-map]");
+  function paint() {
+    var W = window.innerWidth, H = window.innerHeight, dpr = Math.min(window.devicePixelRatio || 1, 2), ctx = cv.getContext("2d");
+    cv.width = W * dpr; cv.height = H * dpr; cv.style.width = W + "px"; cv.style.height = H + "px"; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    var ink = getComputedStyle(document.documentElement).getPropertyValue("--ink").trim();
+    var C = 6, cols = Math.ceil(W / C) + 1, rows = Math.ceil(H / C) + 1, S = 1 / 230, field = new Float32Array(cols * rows), lo = 9, hi = -9, i, j;
+    for (j = 0; j < rows; j++) for (i = 0; i < cols; i++) { var v = terrain(i * C * S + 5.2, j * C * S + 1.4); field[j * cols + i] = v; if (v < lo) lo = v; if (v > hi) hi = v; }
+    ctx.save(); ctx.strokeStyle = ink; ctx.globalAlpha = .3; ctx.setLineDash([5, 5]);
+    for (var gx = 128; gx < W; gx += 128) { ctx.beginPath(); ctx.moveTo(gx + .5, 0); ctx.lineTo(gx + .5, H); ctx.stroke(); }
+    for (var gy = 128; gy < H; gy += 128) { ctx.beginPath(); ctx.moveTo(0, gy + .5); ctx.lineTo(W, gy + .5); ctx.stroke(); }
+    ctx.restore(); ctx.strokeStyle = ink; ctx.globalAlpha = .5; ctx.lineWidth = 1;
+    for (var L = 1; L < 34; L++) {
+      var iso = lo + (hi - lo) * L / 34; ctx.beginPath();
+      for (var y = 0; y < rows - 1; y++) for (var x = 0; x < cols - 1; x++) {
+        var k = y * cols + x, a = field[k], bb = field[k + 1], c = field[k + cols + 1], d = field[k + cols];
+        var code = (a > iso ? 8 : 0) | (bb > iso ? 4 : 0) | (c > iso ? 2 : 0) | (d > iso ? 1 : 0);
+        if (code === 0 || code === 15) continue;
+        var px = x * C, py = y * C, T = [px + C * (iso - a) / (bb - a), py], R = [px + C, py + C * (iso - bb) / (c - bb)], B = [px + C * (iso - d) / (c - d), py + C], Lf = [px, py + C * (iso - a) / (d - a)];
+        var seg = function (p, q) { ctx.moveTo(p[0], p[1]); ctx.lineTo(q[0], q[1]); };
+        switch (code) { case 1: case 14: seg(Lf, B); break; case 2: case 13: seg(B, R); break; case 3: case 12: seg(Lf, R); break; case 4: case 11: seg(T, R); break;
+          case 5: seg(Lf, T); seg(B, R); break; case 6: case 9: seg(T, B); break; case 7: case 8: seg(Lf, T); break; case 10: seg(T, R); seg(Lf, B); break; }
+      }
+      ctx.stroke();
+    }
+    var lab = document.querySelector("[data-labels]");
+    lab.innerHTML = [["Granite Peak", 6, 16, -4], ["Pine Flats", 4, 70, 0], ["Lost Lake", 84, 84, 0], ["Cedar Knoll", 86, 24, 3], ["Copper Pass", 10, 92, -2]].map(function (l) {
+      return '<span style="left:' + l[1] + "%;top:" + l[2] + "%;transform:rotate(" + l[3] + 'deg)">' + l[0] + "</span>";
+    }).join("");
+  }
+  paint();
+  var pt; window.addEventListener("resize", function () { clearTimeout(pt); pt = setTimeout(paint, 200); });
+})();
+</script>
+</body>
+</html>

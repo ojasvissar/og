@@ -251,14 +251,31 @@
             if (typeof namespace === "string") { cal.ns[namespace] = cal.ns[namespace] || api; p(cal.ns[namespace], ar); p(cal, ["initNamespace", namespace]); } else p(cal, ar); return; }
           p(cal, ar); };
       })(window, "https://app.cal.com/embed/embed.js", "init");
-      host.innerHTML = "";
+      // keep the placeholder over the card until cal.com's frame has actually drawn
+      var skel = $(".cal-skel", host);
+      if (skel) {
+        var gone = function () { skel.classList.add("done"); setTimeout(function () { skel.remove(); }, 400); };
+        new MutationObserver(function (m, mo) {
+          var fr = host.querySelector("iframe");
+          if (!fr) return;
+          mo.disconnect(); fr.addEventListener("load", function () { setTimeout(gone, 350); }, { once: true });
+          setTimeout(gone, 8000);
+        }).observe(host, { childList: true, subtree: true });
+      }
       Cal("init", NS, { origin: "https://cal.com" });
       Cal.ns[NS]("inline", { elementOrSelector: "#cal-inline", calLink: host.getAttribute("data-cal-link"), config: { layout: "month_view", theme: theme() } });
       Cal.ns[NS]("ui", { theme: theme(), hideEventTypeDetails: false, layout: "month_view",
         cssVarsPerTheme: { dark: { "cal-brand": "#d9a932" } } });
     }
+    // warm it up early: in the background once the page has settled, straight away if someone heads for the contact section,
+    // and as a last resort when it nears the viewport
+    var idle = window.requestIdleCallback || function (fn) { return setTimeout(fn, 1200); };
+    var soon = function () { idle(load, { timeout: 3000 }); };
+    if (document.readyState === "complete") soon(); else window.addEventListener("load", soon, { once: true });
+    $$('a[href="#book"]').forEach(function (a) { a.addEventListener("pointerenter", load, { once: true }); a.addEventListener("click", load); });
+    if (location.hash === "#book") load();
     if ("IntersectionObserver" in window) {
-      var cio2 = new IntersectionObserver(function (es) { if (es[0].isIntersecting) { load(); cio2.disconnect(); } }, { rootMargin: "800px" });
+      var cio2 = new IntersectionObserver(function (es) { if (es[0].isIntersecting) { load(); cio2.disconnect(); } }, { rootMargin: "1400px" });
       cio2.observe(host);
     } else load();
   })();

@@ -1185,21 +1185,19 @@ html:not(.js) .camp, .camps.in .camp { transform: none; opacity: 1; }
 .co-row a, .co-row li > span { display: grid; place-items: center; height: 56px; color: var(--ink); opacity: .7; transition: opacity .25s, transform .3s var(--ease), color .25s; }
 .co-row a:hover, .co-row a:focus-visible { opacity: 1; color: var(--rust); transform: translateY(-2px); }
 @media (prefers-reduced-motion: reduce) { .co-row { animation: none; flex-wrap: wrap; justify-content: center; width: auto; } }
-.co-row img { display: block; }
-.co-vintality { height: 56px; filter: grayscale(1) brightness(.35) contrast(1.6); }
-.co-learn { height: 24px; filter: brightness(0) opacity(.9); }
-:root[data-theme="night"] .co-vintality { filter: grayscale(1) brightness(2.2); }
-:root[data-theme="night"] .co-learn { filter: none; opacity: .9; }
-.co-word { font: 400 21px var(--display); letter-spacing: .02em; text-transform: uppercase; line-height: .9; }
-.co-word small { display: block; margin-top: 3px; font: 700 8.5px var(--sans); letter-spacing: .34em; }
-.co-serif { font-family: "Zilla Slab", serif; font-weight: 700; font-size: 26px; letter-spacing: .12em; }
-.co-low { text-transform: none; font-family: var(--sans); font-weight: 700; font-size: 23px; letter-spacing: -.01em; }
+.co-row img { display: block; width: auto; }
+/* every mark in its real colours, sized by eye so wordmarks and crests weigh the same */
+.co-vintality { height: 54px; } .co-pavepal { height: 30px; } .co-ubc { height: 50px; } .co-spartan { height: 64px; }
+.co-escalera { height: 38px; } .co-learn { height: 30px; filter: brightness(0); } .co-reskilll { height: 26px; }
+.co-row a, .co-row li > span { filter: saturate(.85); }
+.co-row a:hover, .co-row a:focus-visible { filter: none; }
+/* at night each mark sits on a small paper label so dark logos stay legible */
+:root[data-theme="night"] .co-row a, :root[data-theme="night"] .co-row li > span { height: 72px; padding: 0 18px; border-radius: 8px; background: #efe6cc; opacity: .88; }
 @media (max-width: 600px) {
   .register { padding: 100px 0 80px; }
   .reg-slip { width: 300px; padding: 16px 18px; }
   .reg-q { min-height: 0; font-size: 14px; line-height: 26px; }
   .co-row { gap: 44px; }
-  .co-word { font-size: 17px; }
 }
 @media (prefers-reduced-motion: reduce) { .reg-track { animation: none; } .reg-row { overflow-x: auto; } }
 /* the postcard is ripped away over the footer map (see .ft-tear[data-cut]) */
@@ -1243,8 +1241,19 @@ html:not(.js) .camp, .camps.in .camp { transform: none; opacity: 1; }
 
 /* the calendar: always dark, with a soft lift off the photo */
 .book-card { position: relative; filter: drop-shadow(0 22px 26px rgba(0, 0, 0, .45)); }
-.cal-inline { width: 100%; min-height: 520px; }
-.cal-loading { padding: 80px 20px; text-align: center; font-family: "DM Mono", ui-monospace, monospace; font-size: 12px; color: #e8e2cf; }
+.cal-inline { position: relative; width: 100%; min-height: 520px; }
+/* a calendar-shaped placeholder while cal.com loads, so the card never sits empty */
+.cal-skel { position: absolute; inset: 0; z-index: 2; transition: opacity .35s ease; display: grid; grid-template-columns: 1fr 1.6fr 1fr; gap: 1px; min-height: 520px; border-radius: 8px; overflow: hidden; background: #2a2a2a; }
+.cal-skel > div { padding: 24px 20px; background: #161616; }
+.cal-skel b, .cal-skel i { display: block; border-radius: 6px; background: linear-gradient(90deg, #242424 0%, #333 50%, #242424 100%) 0 0 / 200% 100%; animation: skel 1.3s linear infinite; }
+.cal-skel b { width: 60%; height: 18px; margin-bottom: 18px; }
+.cs-side i { height: 12px; margin-top: 12px; width: 80%; } .cs-side i:nth-child(3) { width: 55%; }
+.cs-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+.cs-days i { aspect-ratio: 1; border-radius: 50%; }
+.cs-times i { height: 38px; margin-top: 10px; border-radius: 8px; }
+@keyframes skel { to { background-position: -200% 0; } }
+.cal-skel.done { opacity: 0; pointer-events: none; }
+@media (max-width: 760px) { .cal-skel { grid-template-columns: 1fr; } .cs-side, .cs-times { display: none; } }
 @media (max-width: 1100px) { .book-grid { grid-template-columns: 1fr; max-width: 820px; margin: 0 auto; } .postcard { max-width: 520px; margin: 0 auto; width: 100%; } }
 @media (max-width: 900px) {
   .book { padding: 110px 16px 120px; }
