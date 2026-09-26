@@ -1,0 +1,20 @@
+{
+  "name": "Ojasv Issar \u00b7 Data Scientist & AI/ML Engineer",
+  "short_name": "Ojasv Issar",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#f9f6ea",
+  "theme_color": "#1c2619",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

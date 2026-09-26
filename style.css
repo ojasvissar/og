@@ -1447,3 +1447,18 @@ html.intro-on .pill, html.intro-on .pill *, html.intro-on .brand-mark, html.intr
 /* performance: sections that are off screen stop animating (and the animated bird sprites stop decoding) */
 .is-off *, .is-off *::before, .is-off *::after { animation-play-state: paused !important; }
 .hero.is-off .flock, .hero.is-off .fireflies { visibility: hidden; }
+
+/* performance: let the browser skip rendering heavy sections until they come near the screen */
+#reviews, #pack, #education { content-visibility: auto; contain-intrinsic-size: auto 900px; }
+/* phones: fewer moving parts in the hero, lighter shadows on big cards */
+@media (max-width: 760px) {
+  .flock .bird:nth-child(n+6) { display: none; }
+  .fireflies .ff:nth-child(n+11) { display: none; }
+  .soft-cloud { animation-duration: 140s; }
+  .sp-cap { display: none; }
+  .sp { padding-bottom: 24px; }
+  .sp-boards { gap: 8px; }
+  .sp-board { padding: 11px 36px 9px 16px; }
+  .sp-boards li:nth-child(even) .sp-board { padding: 11px 16px 9px 36px; }
+  .hello-tag { font-size: 13px; }
+}

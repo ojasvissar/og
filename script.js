@@ -271,13 +271,17 @@
     // and as a last resort when it nears the viewport
     var idle = window.requestIdleCallback || function (fn) { return setTimeout(fn, 1200); };
     var soon = function () { idle(load, { timeout: 3000 }); };
-    // wait a few seconds after load so it doesn't compete with the hero's own entrance
-    var later = function () { setTimeout(soon, 4000); };
-    if (document.readyState === "complete") later(); else window.addEventListener("load", later, { once: true });
+    // load it in a quiet moment: some seconds after the page settles AND once the reader has stopped scrolling,
+    // so its heavy frame never lands mid-scroll. hovering or clicking a contact link loads it at once.
+    var lastScroll = Date.now(), armed = false;
+    window.addEventListener("scroll", function () { lastScroll = Date.now(); }, { passive: true });
+    var quiet = function () { if (loaded) return; if (Date.now() - lastScroll > 1500) load(); else setTimeout(quiet, 700); };
+    var arm = function () { if (!armed) { armed = true; setTimeout(quiet, 5000); } };
+    if (document.readyState === "complete") arm(); else window.addEventListener("load", arm, { once: true });
     $$('a[href="#book"]').forEach(function (a) { a.addEventListener("pointerenter", load, { once: true }); a.addEventListener("click", load); });
     if (location.hash === "#book") load();
     if ("IntersectionObserver" in window) {
-      var cio2 = new IntersectionObserver(function (es) { if (es[0].isIntersecting) { load(); cio2.disconnect(); } }, { rootMargin: "1400px" });
+      var cio2 = new IntersectionObserver(function (es) { if (es[0].isIntersecting) { load(); cio2.disconnect(); } }, { rootMargin: "600px" });
       cio2.observe(host);
     } else load();
   })();
@@ -1245,7 +1249,7 @@
   // marching squares over the warped terrain, sized to `host`; ox/oy shift the terrain so each map is its own place
   function paintContours(cv, host, inkVar, ox, oy) {
     var box = host.getBoundingClientRect(), W = Math.ceil(box.width), H = Math.ceil(box.height);
-    var dpr = Math.min(window.devicePixelRatio || 1, 2), ctx = cv.getContext("2d");
+    var dpr = Math.min(window.devicePixelRatio || 1, window.innerWidth < 760 ? 1.5 : 2), ctx = cv.getContext("2d");
     cv.width = W * dpr; cv.height = H * dpr; cv.style.width = W + "px"; cv.style.height = H + "px";
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     var css = getComputedStyle(host), ink = css.getPropertyValue(inkVar).trim() || "#1a1d1a";
