@@ -1232,6 +1232,7 @@
     window.scrollTo({ top: Math.max(0, y), behavior: reduceMotion ? "auto" : "smooth" });
     if (history.replaceState) history.replaceState(null, "", "#" + id);
     try { el.focus({ preventScroll: true }); } catch (err) {}
+    if (document.activeElement === a && a.closest(".ridge-ds")) a.blur();   // a hero chip shouldn't keep focus once it's done its job
   });
 
   /* ── education: the two summit logs open and close together, so the base camps stay the same height ── */

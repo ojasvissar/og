@@ -318,10 +318,14 @@ ul, ol { list-style: none; padding: 0; }
 :root[data-theme="night"] .ridge-ds .arg { fill: #d9d3bf; }
 :root[data-theme="night"] .ridge-ds .cm { fill: #9aa3b5; }
 :root[data-theme="night"] .ridge-ds .gd-dot { fill: #e6b04a; }
-.ridge-ds .ds-link { pointer-events: auto; cursor: pointer; }
+/* the chips are a pointer shortcut to About (the nav link is the keyboard route), so no focus ring is left behind;
+   the hover tint only applies where there's a real hover, so it can't stick after a tap */
+.ridge-ds .ds-link { pointer-events: auto; cursor: pointer; outline: none; -webkit-tap-highlight-color: transparent; }
 .ridge-ds .ds-link .chip { transition: fill .25s ease, stroke .25s ease; }
-.ridge-ds .ds-link:hover .chip { fill: rgba(246, 242, 228, .78); stroke: rgba(154, 74, 38, .55); }
-:root[data-theme="night"] .ridge-ds .ds-link:hover .chip { fill: rgba(20, 30, 52, .7); stroke: rgba(230, 176, 74, .6); }
+@media (hover: hover) {
+  .ridge-ds .ds-link:hover .chip { fill: rgba(246, 242, 228, .78); stroke: rgba(154, 74, 38, .55); }
+  :root[data-theme="night"] .ridge-ds .ds-link:hover .chip { fill: rgba(20, 30, 52, .7); stroke: rgba(230, 176, 74, .6); }
+}
 .ridge-ds .fit { fill: none; stroke: var(--ds-ink); stroke-width: 1; stroke-dasharray: 1 5; stroke-linecap: round; opacity: .3; }
 .js .ridge-ds g { opacity: 0; animation: ds-in .7s ease forwards; animation-delay: var(--d, 2.2s); }
 .js .ridge-ds .gd { opacity: 1; animation: none; }
