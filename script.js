@@ -286,6 +286,15 @@
     } else load();
   })();
 
+  /* writing: copy the paper's BibTeX */
+  $$("[data-cite]").forEach(function (b) {
+    var bib = $("[data-bib]", b.closest("article"));
+    b.addEventListener("click", function () {
+      var done = function () { b.textContent = "Copied ✓"; b.classList.add("ok"); setTimeout(function () { b.textContent = "Copy citation"; b.classList.remove("ok"); }, 1800); };
+      if (navigator.clipboard && bib) navigator.clipboard.writeText(bib.value).then(done, done); else done();
+    });
+  });
+
   /* postcard: copy the email address */
   $$(".pc-copy").forEach(function (b) {
     b.addEventListener("click", function () {
@@ -882,6 +891,7 @@
         page.setAttribute("aria-hidden", String(hidden));
       });
       count.textContent = (single ? Math.floor(state / 2) : state) + 1;
+      var tot = $("[data-jn-total]"); if (tot) tot.textContent = $$(".jn-notes", book).length;
       pageLabel.textContent = single ? (state % 2 ? "screens · page 2 / 2" : "notes · page 1 / 2") : "";
       controls();
     }
@@ -1247,7 +1257,8 @@
     if (cv) paintContours(cv, topo, "--topo-ink", 0, 0);
   }
   // marching squares over the warped terrain, sized to `host`; ox/oy shift the terrain so each map is its own place
-  function paintContours(cv, host, inkVar, ox, oy) {
+  // page: when given (the host's top in page pixels), terrain, grid and levels are pinned to the page, so neighbouring sheets join seamlessly
+  function paintContours(cv, host, inkVar, ox, oy, page) {
     var box = host.getBoundingClientRect(), W = Math.ceil(box.width), H = Math.ceil(box.height);
     var dpr = Math.min(window.devicePixelRatio || 1, window.innerWidth < 760 ? 1.5 : 2), ctx = cv.getContext("2d");
     cv.width = W * dpr; cv.height = H * dpr; cv.style.width = W + "px"; cv.style.height = H + "px";
@@ -1257,18 +1268,19 @@
     var C = 6, cols = Math.ceil(W / C) + 1, rows = Math.ceil(H / C) + 1, S = 1 / 230;  // S: terrain features per px
     var field = new Float32Array(cols * rows), lo = 9, hi = -9;
     for (var j = 0; j < rows; j++) for (var i = 0; i < cols; i++) {
-      var v = terrain(i * C * S + ox, j * C * S + oy); field[j * cols + i] = v;
+      var v = terrain(i * C * S + ox, j * C * S + oy + (page != null ? page * S : 0)); field[j * cols + i] = v;
       if (v < lo) lo = v; if (v > hi) hi = v;
     }
     // survey grid
     ctx.save(); ctx.strokeStyle = ink; ctx.globalAlpha = 0.35; ctx.lineWidth = 1; ctx.setLineDash([5, 5]);
     var g = 128;
+    if (page != null) { lo = 0.12; hi = 0.88; }
     for (var gx = g; gx < W; gx += g) { ctx.beginPath(); ctx.moveTo(gx + 0.5, 0); ctx.lineTo(gx + 0.5, H); ctx.stroke(); }
-    for (var gy = g; gy < H; gy += g) { ctx.beginPath(); ctx.moveTo(0, gy + 0.5); ctx.lineTo(W, gy + 0.5); ctx.stroke(); }
+    for (var gy = page != null ? g - (page % g) : g; gy < H; gy += g) { ctx.beginPath(); ctx.moveTo(0, gy + 0.5); ctx.lineTo(W, gy + 0.5); ctx.stroke(); }
     ctx.restore();
 
     ctx.strokeStyle = ink; ctx.lineCap = "round"; ctx.lineJoin = "round";
-    var LEVELS = 34;
+    var LEVELS = page != null ? 52 : 34;
     for (var L = 1; L < LEVELS; L++) {
       var iso = lo + (hi - lo) * L / LEVELS;
       ctx.beginPath();
@@ -1309,7 +1321,7 @@
     stops.forEach(function (li) {
       var pt = tsvg.createSVGPoint(); pt.x = li._p.x; pt.y = li._p.y;
       var sp = pt.matrixTransform(m);
-      li.style.left = clamp(sp.x - box.left, 110, box.width - 110) + "px";
+      li.style.left = clamp(sp.x - box.left, 132, box.width - 132) + "px";
       li.style.top = (sp.y - box.top) + "px";
     });
   }
@@ -1342,7 +1354,7 @@
   if (topo && trailLen) {
     setTrail(0);
     if ("IntersectionObserver" in window) {
-      var jio = new IntersectionObserver(function (es) { if (es[0].isIntersecting) { playJourney(); jio.disconnect(); } }, { threshold: 0.3 });
+      var jio = new IntersectionObserver(function (es) { if (es[0].isIntersecting) { playJourney(); jio.disconnect(); } }, { threshold: 0.12 });
       jio.observe(topo);
     } else { topo.classList.add("cleared"); setTrail(1); }
   }
@@ -1425,6 +1437,41 @@
     $$(".hero, .trusted, #services, #reviews, #experience, #book, .footer").forEach(function (el) { io.observe(el); });
   })();
 
+  /* ── in-page links (nav, footer map, buttons) land with the section centred on screen ── */
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest && e.target.closest('a[href^="#"]');
+    if (!a || e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
+    var id = a.getAttribute("href").slice(1), el = id && document.getElementById(id);
+    if (!el || id === "top") return;
+    e.preventDefault();
+    var bar = 84, vh = window.innerHeight, r = el.getBoundingClientRect(), top = r.top + window.scrollY;
+    var y = top + r.height / 2 - (vh + bar) / 2;
+    window.scrollTo({ top: Math.max(0, y), behavior: reduceMotion ? "auto" : "smooth" });
+    if (history.replaceState) history.replaceState(null, "", "#" + id);
+    try { el.focus({ preventScroll: true }); } catch (err) {}
+  });
+
+  /* ── about: type the hello world when it comes into view ── */
+  (function () {
+    var pre = $("[data-hello-code]"); if (!pre || reduceMotion) return;
+    var code = $("code", pre), html = code.innerHTML, out = $(".hc-out", code), outText = out.textContent;
+    var first = html.slice(0, html.indexOf('\n'));
+    var tmp = document.createElement("div"); tmp.innerHTML = first; var cmd = tmp.textContent;
+    code.innerHTML = '<span data-typed></span><i class="tc"></i>';
+    var typed = $("[data-typed]", code);
+    var go = function () {
+      var i = 0;
+      (function type() {
+        i++; tmp.textContent = cmd.slice(0, i);
+        typed.innerHTML = tmp.innerHTML.replace(/^&gt;&gt;&gt;/, '<span class="hc-p">&gt;&gt;&gt;</span>').replace(/print/, '<span class="hc-f">print</span>').replace(/("[^"]*"?)/, '<span class="hc-s">$1</span>');
+        if (i < cmd.length) setTimeout(type, 45 + Math.random() * 40);
+        else setTimeout(function () { code.innerHTML = html.replace('</code>', ''); code.insertAdjacentHTML("beforeend", '<i class="tc"></i>'); }, 380);
+      })();
+    };
+    if ("IntersectionObserver" in window) new IntersectionObserver(function (es, io) { if (es[0].isIntersecting) { io.disconnect(); setTimeout(go, 350); } }, { threshold: .6 }).observe(pre);
+    else go();
+  })();
+
   /* ── entrance animations: anything marked data-anim gets .in once it scrolls into view ── */
   (function () {
     var els = $$("[data-anim]");
@@ -1466,6 +1513,49 @@
       card.style.transform = "rotate(0deg) perspective(900px) rotateY(" + f(x * 8) + "deg) rotateX(" + f(-y * 6) + "deg)";
     });
     card.addEventListener("pointerleave", function () { card.style.transform = ""; });
+  })();
+
+  /* ── cream sections: faint contours, painted only once each section nears the screen ── */
+  (function () {
+    var els = $$("[data-cream-topo]");
+    if (!els.length) return;
+    function paint(el) {
+      var cv = el._topo;
+      if (!cv) { cv = el._topo = document.createElement("canvas"); cv.className = "cream-topo"; cv.setAttribute("aria-hidden", "true"); el.insertBefore(cv, el.firstChild); }
+      var o = (el.getAttribute("data-cream-topo") || "0,0").split(",").map(Number);
+      paintContours(cv, el, "--cream-ink", 4.2, 2.6, Math.round(el.getBoundingClientRect().top + window.scrollY));
+      el._painted = el.offsetWidth + "x" + el.offsetHeight + document.documentElement.getAttribute("data-theme");
+    }
+    // draw them one at a time in idle moments after load, never in the middle of a scroll
+    var idle = window.requestIdleCallback || function (fn) { return setTimeout(fn, 60); };
+    var queue = function (list) { if (!list.length) return; idle(function () { paint(list[0]); queue(list.slice(1)); }, { timeout: 1500 }); };
+    var start = function () { setTimeout(function () { queue(els.slice()); }, 600); };
+    if (document.readyState === "complete") start(); else window.addEventListener("load", start, { once: true });
+    var t, repaintVisible = function () { queue(els.filter(function (el) { return el._painted; })); };
+    window.addEventListener("resize", function () { clearTimeout(t); t = setTimeout(repaintVisible, 250); });
+    new MutationObserver(repaintVisible).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  })();
+
+  /* ── toolkit: faint contours on the forest band, drawn at idle ── */
+  (function () {
+    var sec = $("#pack"), cv = $("[data-rings-contours]");
+    if (!sec || !cv) return;
+    var idle = window.requestIdleCallback || function (fn) { return setTimeout(fn, 800); };
+    var paint = function () { paintContours(cv, sec, "--rings-ink", 5.5, 8.8); }, t;
+    var go = function () { setTimeout(function () { idle(paint, { timeout: 2500 }); }, 1200); };
+    if (document.readyState === "complete") go(); else window.addEventListener("load", go, { once: true });
+    window.addEventListener("resize", function () { clearTimeout(t); t = setTimeout(paint, 250); });
+    new MutationObserver(paint).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  })();
+
+  /* ── writing: canyon-clay contour sheet ── */
+  (function () {
+    var sec = $("#writing"), cv = $("[data-wr-contours]");
+    if (!sec || !cv) return;
+    var paint = function () { paintContours(cv, sec, "--wr-ink", 9.6, 3.3); }, t;
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(paint); else paint();
+    window.addEventListener("resize", function () { clearTimeout(t); t = setTimeout(paint, 200); });
+    new MutationObserver(paint).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
   })();
 
   /* ── services: the signpost boards pick a route; the card redraws its profile ── */
@@ -1545,23 +1635,177 @@
     track.style.setProperty("--dur", Math.round(track.scrollWidth / 2 / 38) + "s");
   });
 
-  /* ── footer: the site as a topo trail map, in the experience map's colours ── */
+  /* ── footer: faint contours behind the sign-off ── */
   (function () {
-    var foot = $(".footer"), cv = $("[data-ft-contours]"), map = $("[data-trailmap]"), top = $("[data-to-top]");
-    var panel = $(".tm-panel"), paint = function () { if (cv && panel) paintContours(cv, panel, "--mp-ink", 7.3, 4.1); };
-    paint();
-    var t;
-    window.addEventListener("resize", function () { clearTimeout(t); t = setTimeout(paint, 200); });
+    var ft = $(".footer.rt"), cv = $("[data-rt-contours]");
+    if (!ft || !cv) return;
+    var idle = window.requestIdleCallback || function (fn) { return setTimeout(fn, 300); }, t;
+    var paint = function () { paintContours(cv, ft, "--ft-ink", 6.1, 4.4); };
+    var go = function () { setTimeout(function () { idle(paint, { timeout: 3000 }); }, 3000); };
+    if (document.readyState === "complete") go(); else window.addEventListener("load", go, { once: true });
+    window.addEventListener("resize", function () { clearTimeout(t); t = setTimeout(paint, 300); });
     new MutationObserver(paint).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(paint);
-    if (map) {
-      if ("IntersectionObserver" in window) new IntersectionObserver(function (es, io) {
-        if (es[0].isIntersecting) { map.classList.add("in"); io.disconnect(); }
-      }, { threshold: .35 }).observe(map);
-      else map.classList.add("in");
-    }
-    if (top) top.addEventListener("click", function () { window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" }); });
   })();
+
+  /* ── footer: route covered. a contour mountain stacked level by level on a compass disc, a dashed route
+     to the summit, and a pin for every section of the page along it ── */
+  (function () {
+    var stage = $("[data-rtmap]"), cv = $("[data-route-art]"), pinHost = $("[data-route-pins]");
+    if (!stage || !cv) return;
+    var N = 116, F = null, summit = null, R = rng(1717);
+    var ICON = {
+      about: '<circle cx="12" cy="8" r="3.4"/><path d="M5.5 19c.8-3.6 3.4-5.4 6.5-5.4s5.7 1.8 6.5 5.4"/>',
+      services: '<circle cx="12" cy="12" r="8"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>',
+      work: '<path d="M3.5 7.5h6l1.6 2h9.4v9h-17z"/>',
+      reviews: '<path d="M6 16.5c-1.4-.6-2-2-2-3.6C4 10 5.8 8 8.5 7.5M14 16.5c-1.4-.6-2-2-2-3.6 0-2.9 1.8-4.9 4.5-5.4"/>',
+      exp: '<rect x="4" y="8" width="16" height="11" rx="1.5"/><path d="M9 8V6h6v2 M4 13h16"/>',
+      edu: '<path d="M12 5l8 12H4z M12 5v12 M9.5 17l2.5-4 2.5 4"/>',
+      pubs: '<path d="M7 3.5h7l4 4v13H7z M14 3.5v4h4 M10 12h5 M10 15.5h5"/>',
+      flag: '<path d="M7 21V4 M7 4.5c3-1.5 6 1.5 10 0v8c-4 1.5-7-1.5-10 0"/>'
+    };
+    var STOPS = [["#about", "About", "about", "cream", .0, "S"], ["#services", "Services", "services", "sage", .15], ["#work", "Selected work", "work", "rust", .29],
+                 ["#reviews", "Reviews", "reviews", "gold", .37], ["#experience", "Work experience", "exp", "sage", .53], ["#education", "Education", "edu", "rust", .63],
+                 ["#writing", "Publications", "pubs", "gold", .74], ["#book", "Contact", "flag", "cream", 1]];
+    function hRaw(u, v) {
+      var d = Math.sqrt(u * u + v * v), fall = Math.max(0, Math.min(1, (0.94 - d) / 0.34));
+      fall = fall * fall * (3 - 2 * fall);
+      var pk = function (cu, cv2, rad, pw) { var q = Math.sqrt((u - cu) * (u - cu) + (v - cv2) * (v - cv2)); return Math.pow(Math.max(0, 1 - q / rad), pw); };
+      var n = fbm(u * 2.6 + 5, v * 2.6 + 1, 4), ridge = 1 - Math.abs(2 * n - 1);
+      return fall * (Math.max(pk(.08, -.12, .95, 1.3), pk(.42, .2, .62, 1.5) * .72) * (.8 + .32 * ridge) + .05 * fbm(u * 7, v * 7, 2));
+    }
+    function build() {
+      F = new Float32Array(N * N); var mx = -1;
+      for (var j = 0; j < N; j++) for (var i = 0; i < N; i++) { var u = i / (N - 1) * 2 - 1, v = j / (N - 1) * 2 - 1, h = hRaw(u, v); F[j * N + i] = h; if (h > mx) { mx = h; summit = [u, v]; } }
+      for (var k = 0; k < F.length; k++) F[k] /= mx;
+    }
+    function hs(u, v) {
+      var x = Math.max(0, Math.min(N - 1.001, (u + 1) / 2 * (N - 1))), y = Math.max(0, Math.min(N - 1.001, (v + 1) / 2 * (N - 1))), i = x | 0, k = y | 0, fx = x - i, fy = y - k;
+      var a = F[k * N + i], b = F[k * N + i + 1], c = F[(k + 1) * N + i], d = F[(k + 1) * N + i + 1];
+      return a + (b - a) * fx + (c - a) * fy + (a - b - c + d) * fx * fy;
+    }
+    function route(t) {   // spiral in from the rim to the summit, with a little wander
+      var a0 = 2.55, d = .9 * Math.pow(1 - t, .85), ang = a0 - 2.9 * t + .25 * Math.sin(t * 11);
+      var u = Math.cos(ang) * d, v = Math.sin(ang) * d, w = Math.pow(t, 4);
+      return [u + (summit[0] - u) * w, v + (summit[1] - v) * w];
+    }
+    // geometry is built once per size; the drawing is then either played (first view) or painted at once
+    var G = null, played = false;
+    function geometry() {
+      if (!F) build();
+      var W = Math.round(stage.clientWidth), H = Math.round(stage.clientHeight), dpr = Math.min(window.devicePixelRatio || 1, 2);
+      var css = getComputedStyle(stage), g = { W: W, H: H, dpr: dpr, card: css.getPropertyValue("--rt-card").trim(), line: css.getPropertyValue("--rt-line").trim(),
+        ring: css.getPropertyValue("--rt-ring").trim(), txt: css.getPropertyValue("--rt-text").trim(), trail: css.getPropertyValue("--rt-trail").trim() };
+      var Rr = Math.min(W * .42, H * .98), K = .42, cx = W / 2, cy = H * .7, Z = H * .44, th = -.55, cs = Math.cos(th), sn = Math.sin(th);
+      var P = function (u, v, h) { var x = u * cs - v * sn, y = u * sn + v * cs; return [cx + x * Rr, cy + y * Rr * K - h * Z]; };
+      g.Rr = Rr; g.K = K; g.cx = cx; g.cy = cy; g.th = th;
+      // contour levels: each a footprint fill (hides what's behind) plus its line
+      var LV = 26, step = 2 / (N - 1); g.levels = [];
+      for (var L = 0; L < LV; L++) {
+        var iso = .015 + L / LV * .985, fill = new Path2D(), stroke = new Path2D();
+        for (var j = 0; j < N - 1; j++) for (var i = 0; i < N - 1; i++) {
+          var k0 = j * N + i, c = [F[k0], F[k0 + 1], F[k0 + N + 1], F[k0 + N]];
+          if (!((c[0] > iso) + (c[1] > iso) + (c[2] > iso) + (c[3] > iso))) continue;
+          var u0 = -1 + i * step, v0 = -1 + j * step, corner = [[u0, v0], [u0 + step, v0], [u0 + step, v0 + step], [u0, v0 + step]], poly = [], cross = [];
+          for (var q = 0; q < 4; q++) {
+            var n2 = (q + 1) % 4;
+            if (c[q] > iso) poly.push(corner[q]);
+            if ((c[q] > iso) !== (c[n2] > iso)) { var tt = (iso - c[q]) / (c[n2] - c[q]), pt = [corner[q][0] + (corner[n2][0] - corner[q][0]) * tt, corner[q][1] + (corner[n2][1] - corner[q][1]) * tt]; poly.push(pt); cross.push(pt); }
+          }
+          var p0 = P(poly[0][0], poly[0][1], iso); fill.moveTo(p0[0], p0[1]);
+          for (var z = 1; z < poly.length; z++) { var pz = P(poly[z][0], poly[z][1], iso); fill.lineTo(pz[0], pz[1]); }
+          fill.closePath();
+          for (var w = 0; w + 1 < cross.length; w += 2) { var a1 = P(cross[w][0], cross[w][1], iso), b1 = P(cross[w + 1][0], cross[w + 1][1], iso); stroke.moveTo(a1[0], a1[1]); stroke.lineTo(b1[0], b1[1]); }
+        }
+        g.levels.push({ fill: fill, stroke: stroke, a: .6 + .4 * L / LV });
+      }
+      // the route as points, with cumulative length so it can be inked at a steady pace
+      g.route = []; var len = 0, prev = null;
+      for (var s = 0; s <= 200; s++) { var rt = route(s / 200), pp = P(rt[0], rt[1], hs(rt[0], rt[1]) + .01); if (prev) len += Math.hypot(pp[0] - prev[0], pp[1] - prev[1]); pp.push(len, s / 200); g.route.push(pp); prev = pp; }
+      g.routeLen = len;
+      g.pins = STOPS.map(function (st, k) {
+        var rp = route(st[4]), q = P(rp[0], rp[1], hs(rp[0], rp[1])), stem = k === STOPS.length - 1 ? 24 : 30 + ((k * 37) % 4) * 9;
+        var side = st[2] === "services" ? "r" : (q[0] < W * .5 ? "l" : "r");
+        return { t: st[4], html: '<a class="rt-pin rt-' + st[3] + ' rt-side-' + side + '" href="' + st[0] + '" style="left:' + f(q[0] / W * 100) + "%;top:" + f(q[1] / H * 100) + "%;--stem:" + stem + "px;--i:" + k + '">' +
+          '<span class="rt-head" aria-hidden="true"><svg viewBox="0 0 24 24">' + ICON[st[2]] + '</svg></span><span class="rt-lab">' + st[1] + "</span></a>" };
+      });
+      return g;
+    }
+    function compass(ctx, g, frac) {
+      var cx = g.cx, cy = g.cy, Rr = g.Rr, K = g.K, th = g.th;
+      ctx.lineWidth = 2; ctx.strokeStyle = g.ring; ctx.beginPath(); ctx.ellipse(cx, cy, Rr, Rr * K, 0, Math.PI / 2, Math.PI / 2 + Math.PI * 2 * frac); ctx.stroke();
+      ctx.strokeStyle = g.txt; ctx.globalAlpha = .55;
+      for (var t = 0; t < 120 * frac; t++) { var a = Math.PI / 2 + t / 120 * Math.PI * 2, r2 = t % 10 ? 1.11 : 1.16;
+        ctx.lineWidth = t % 10 ? 1 : 1.6; ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * Rr * 1.07, cy + Math.sin(a) * Rr * 1.07 * K); ctx.lineTo(cx + Math.cos(a) * Rr * r2, cy + Math.sin(a) * Rr * r2 * K); ctx.stroke(); }
+      ctx.globalAlpha = frac; ctx.fillStyle = g.txt; ctx.font = "700 " + Math.round(Rr * .065) + "px 'Josefin Sans', sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      [["N", -Math.PI / 2 - th], ["E", -th], ["S", Math.PI / 2 - th], ["W", Math.PI - th]].forEach(function (L) { ctx.fillText(L[0], cx + Math.cos(L[1]) * Rr * 1.25, cy + Math.sin(L[1]) * Rr * 1.25 * K); });
+      ctx.globalAlpha = 1;
+    }
+    function level(ctx, g, L, alpha) {
+      var lv = g.levels[L];
+      ctx.fillStyle = g.card; ctx.strokeStyle = g.card; ctx.lineWidth = 1.2; ctx.fill(lv.fill); ctx.stroke(lv.fill);
+      ctx.lineWidth = 1.5; ctx.strokeStyle = g.line; ctx.globalAlpha = lv.a * alpha; ctx.stroke(lv.stroke); ctx.globalAlpha = 1;
+    }
+    function trail(ctx, g, frac) {   // the dashed route up to `frac` of its length, and a walker at its tip
+      var upto = g.routeLen * frac, tip = null;
+      ctx.setLineDash([6, 6]); ctx.lineWidth = 2.4; ctx.strokeStyle = g.trail; ctx.lineCap = "round"; ctx.beginPath();
+      for (var s = 0; s < g.route.length; s++) {
+        var p = g.route[s];
+        if (p[2] > upto) { var q = g.route[s - 1], k = (upto - q[2]) / (p[2] - q[2] || 1); tip = [q[0] + (p[0] - q[0]) * k, q[1] + (p[1] - q[1]) * k]; ctx.lineTo(tip[0], tip[1]); break; }
+        s ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]); tip = p;
+      }
+      ctx.stroke(); ctx.setLineDash([]);
+      if (frac < 1 && tip) { ctx.fillStyle = g.ring; ctx.beginPath(); ctx.arc(tip[0], tip[1], 4.5, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = g.card; ctx.lineWidth = 2; ctx.stroke(); }
+    }
+    function setup(g) {
+      var ctx = cv.getContext("2d");
+      cv.width = g.W * g.dpr; cv.height = g.H * g.dpr; cv.style.width = g.W + "px"; cv.style.height = g.H + "px"; ctx.setTransform(g.dpr, 0, 0, g.dpr, 0, 0);
+      pinHost.innerHTML = g.pins.map(function (p) { return p.html; }).join("");
+      stage.classList.add("drawn");
+      return ctx;
+    }
+    function paintAll() {
+      G = geometry(); var ctx = setup(G);
+      ctx.clearRect(0, 0, G.W, G.H); compass(ctx, G, 1);
+      for (var L = 0; L < G.levels.length; L++) level(ctx, G, L, 1);
+      trail(ctx, G, 1);
+      $$(".rt-pin", pinHost).forEach(function (a) { a.classList.add("on"); });
+    }
+    // the show: the compass rings round, the mountain rises level by level, then the trail is walked to the summit
+    function play() {
+      if (played) return; played = true;
+      if (reduceMotion) { paintAll(); return; }
+      G = geometry(); var ctx = setup(G), g = G, pins = $$(".rt-pin", pinHost);
+      var base = document.createElement("canvas"); base.width = cv.width; base.height = cv.height; var bctx = base.getContext("2d"); bctx.setTransform(g.dpr, 0, 0, g.dpr, 0, 0);
+      var T0 = performance.now(), RING = 700, RISE = 1900, WALK = 2600, drawnL = 0, D = 0;
+      (function frame(now) {
+        if (G !== g) return;   // resized mid-show: paintAll took over
+        var t = now - T0;
+        bctx.clearRect(0, 0, g.W, g.H); compass(bctx, g, Math.min(1, t / RING));
+        var want = Math.max(0, Math.min(g.levels.length, Math.floor((t - RING * .5) / RISE * g.levels.length) + 1));
+        for (var L = 0; L < want; L++) level(bctx, g, L, L === want - 1 && want < g.levels.length ? .5 : 1);
+        drawnL = want;
+        ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height); ctx.drawImage(base, 0, 0); ctx.setTransform(g.dpr, 0, 0, g.dpr, 0, 0);
+        var wt = Math.max(0, Math.min(1, (t - RING * .5 - RISE) / WALK)), e = wt < .5 ? 2 * wt * wt : 1 - Math.pow(-2 * wt + 2, 2) / 2;
+        if (t > RING * .5 + RISE) {
+          trail(ctx, g, e);
+          var at = 0; for (var s = 0; s < g.route.length && g.route[s][2] <= g.routeLen * e; s++) at = g.route[s][3];
+          pins.forEach(function (a, k) { if (at >= g.pins[k].t - .001) a.classList.add("on"); });
+        }
+        if (wt < 1 || drawnL < g.levels.length) requestAnimationFrame(frame);
+      })(T0);
+    }
+    var t0;
+    var start = function () {
+      if ("IntersectionObserver" in window) new IntersectionObserver(function (es, io) { if (es[0].isIntersecting) { io.disconnect(); play(); } }, { threshold: .35 }).observe(stage);
+      else paintAll();
+    };
+    if (document.readyState === "complete") start(); else window.addEventListener("load", start, { once: true });
+    window.addEventListener("resize", function () { clearTimeout(t0); t0 = setTimeout(function () { if (played) paintAll(); }, 300); });
+    new MutationObserver(function () { if (played) paintAll(); }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  })();
+
+  /* ── footer: back to top ── */
+  $$("[data-to-top]").forEach(function (b) { b.addEventListener("click", function () { window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" }); }); });
 
   /* ── toolkit: a tree-ring cross-section ─────────────────────── */
   var ringsEl = $(".rings"), sliceHost = $("[data-slice]"), sliceTip = $("[data-slice-tip]");
@@ -1699,7 +1943,7 @@
   }
 
   /* ── one scroll loop for everything ────────────────────── */
-  var ticking = false;
+  var ticking = false, progress = $("[data-progress]");
   function requestTick() { if (!ticking) { ticking = true; requestAnimationFrame(frame); } }
   function frame() {
     ticking = false;
@@ -1718,6 +1962,7 @@
     }
     updateSigns();
     updateBar();
+    if (progress) progress.style.transform = "scaleX(" + Math.min(1, y / Math.max(1, document.documentElement.scrollHeight - vh)).toFixed(4) + ")";
   }
   window.addEventListener("scroll", requestTick, { passive: true });
   window.addEventListener("resize", function () { measure(); placeStops(); requestTick(); });

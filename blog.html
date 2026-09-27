@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Blog · Ojasv Issar · Field notes on machine learning</title>
+<meta name="description" content="Field notes by Ojasv Issar, data scientist and AI/ML engineer in Vancouver: writing on machine learning, AI for climate and the world models are meant for." />
+<meta name="robots" content="index, follow" />
+<link rel="canonical" href="https://ojasvissar.tech/blog.html" />
+<meta name="theme-color" content="#5b2f1f" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://ojasvissar.tech/blog.html" />
+<meta property="og:title" content="Blog · Ojasv Issar" />
+<meta property="og:description" content="Field notes on machine learning, AI for climate and the world models are meant for." />
+<meta property="og:image" content="https://ojasvissar.tech/assets/og-image.jpg" />
+<meta name="twitter:card" content="summary_large_image" />
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+<link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<script>
+  (function () {
+    var r = document.documentElement, t, h = new Date().getHours();
+    try { t = sessionStorage.getItem("og-theme"); } catch (e) {}
+    if (t !== "day" && t !== "night") t = h >= 7 && h < 19 ? "day" : "night";
+    r.setAttribute("data-theme", t);
+  })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=DM+Mono:wght@400;500&family=Zilla+Slab:wght@600;700&family=Josefin+Sans:wght@400;600;700&family=Kalam:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root { --bg: #5b2f1f; --ink: #e9c89a; --cream: #f7f0dc; --gold: #d9a932; --rust: #a8481f; }
+  :root[data-theme="night"] { --bg: #2e1810; --ink: #b88a5c; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { min-height: 100vh; background: var(--bg); color: #f6ebd4; font-family: "Josefin Sans", "Futura", sans-serif; overflow-x: clip; }
+  a { color: inherit; text-decoration: none; }
+  .map { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: .5; }
+  .labels { position: fixed; inset: 0; z-index: 0; pointer-events: none; font: 700 12px "Josefin Sans", sans-serif; letter-spacing: .34em; text-transform: uppercase; color: var(--ink); opacity: .6; }
+  .labels span { position: absolute; white-space: nowrap; }
+  .wrap { position: relative; z-index: 1; max-width: 980px; margin: 0 auto; padding: 26px 20px 80px; }
+  .bar { display: flex; align-items: center; justify-content: space-between; gap: 12px 18px; flex-wrap: wrap; padding: 8px 8px 8px 10px; border-radius: 12px; background: rgba(247, 241, 224, .96); color: #232b1c;
+    box-shadow: 0 4px 0 rgba(0, 0, 0, .15), 0 18px 34px -18px rgba(0, 0, 0, .6); animation: drop .7s cubic-bezier(.22, 1, .36, 1) both; }
+  .back { display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px 7px; border-radius: 7px; font: 700 11px "Josefin Sans", sans-serif; letter-spacing: .18em; text-transform: uppercase; transition: background-color .2s; }
+  .back:hover { background: rgba(35, 43, 28, .08); }
+  .bar-links { display: flex; gap: 6px; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px 8px; border-radius: 7px; border: 1.5px solid #232b1c; font: 700 11px "Josefin Sans", sans-serif; letter-spacing: .16em; text-transform: uppercase; transition: background-color .2s, color .2s, transform .25s cubic-bezier(.22, 1, .36, 1); }
+  .btn:hover { transform: translateY(-2px); background: rgba(35, 43, 28, .08); }
+  .btn.solid { background: #1d2619; border-color: #1d2619; color: #f4ecd2; } .btn.solid:hover { background: var(--rust); border-color: var(--rust); }
+  .hero { margin: 70px 0 44px; animation: rise .9s cubic-bezier(.22, 1, .36, 1) .1s both; }
+  .kicker { font: 700 11px "Josefin Sans", sans-serif; letter-spacing: .3em; text-transform: uppercase; color: var(--gold); }
+  h1 { margin-top: 10px; font: 400 clamp(46px, 8vw, 96px)/.95 "Bowlby One", sans-serif; letter-spacing: .01em; text-transform: uppercase; color: #f6ebd4; display: inline-block; transform: scaleX(1.06); transform-origin: left; }
+  .sub { margin-top: 16px; max-width: 560px; font: 400 19px/1.5 "Kalam", cursive; color: #ead7b8; }
+  /* a post is a journal page pinned to the map */
+  .post { position: relative; display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 28px; padding: 34px 34px 30px; border-radius: 4px; color: #2d3021; margin-top: 26px;
+    background: repeating-linear-gradient(transparent 0 29px, rgba(29, 93, 120, .12) 29px 30px) 0 18px, var(--cream);
+    box-shadow: 0 1px 1px rgba(0, 0, 0, .15), 0 30px 46px -26px rgba(0, 0, 0, .7); transform: rotate(-.6deg); transition: transform .45s cubic-bezier(.22, 1, .36, 1), box-shadow .45s;
+    animation: rise .9s cubic-bezier(.22, 1, .36, 1) .25s both; }
+  .post:hover { transform: rotate(0) translateY(-6px); box-shadow: 0 1px 1px rgba(0, 0, 0, .15), 0 40px 56px -26px rgba(0, 0, 0, .75); }
+  .post::before { content: ""; position: absolute; left: 50%; top: -12px; width: 96px; height: 26px; margin-left: -48px; background: rgba(214, 196, 150, .85); transform: rotate(-2deg); clip-path: polygon(0 10%, 6% 0, 94% 4%, 100% 12%, 100% 90%, 94% 100%, 6% 96%, 0 88%); }
+  .date { display: grid; place-items: center; align-content: center; width: 110px; height: 110px; border-radius: 50%; border: 3px double var(--rust); color: var(--rust); transform: rotate(-9deg); text-align: center; }
+  .date b { display: block; font: 400 34px/1 "Bowlby One", sans-serif; } .date small { display: block; font: 700 10px "Josefin Sans", sans-serif; letter-spacing: .22em; text-transform: uppercase; margin-top: 4px; }
+  .meta { font: 400 15px "Kalam", cursive; color: #6f6a5a; }
+  .post h2 { margin-top: 6px; font: 700 clamp(24px, 3vw, 32px)/1.2 "Kalam", cursive; } .post h2 a { color: #253049; transition: color .2s; } .post h2 a:hover { color: var(--rust); }
+  .text { margin-top: 12px; font-size: 16px; line-height: 1.75; color: #3b3a2e; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
+  .tags i { padding: 3px 10px 2px; border-radius: 999px; border: 1px solid rgba(37, 48, 73, .25); font: 700 10px "Josefin Sans", sans-serif; font-style: normal; letter-spacing: .1em; text-transform: uppercase; color: #3b4258; }
+  .read { display: inline-flex; gap: 8px; margin-top: 22px; padding: 11px 18px 9px; border-radius: 6px; background: #1d2619; color: #f4ecd2; font: 700 11px "Josefin Sans", sans-serif; letter-spacing: .16em; text-transform: uppercase; transition: background-color .2s, transform .25s; }
+  .read:hover { background: var(--rust); transform: translateY(-2px); }
+  /* the next page of the notebook, still blank */
+  .next { margin-top: 34px; padding: 30px; border-radius: 4px; border: 2px dashed rgba(246, 235, 212, .35); text-align: center; animation: rise .9s cubic-bezier(.22, 1, .36, 1) .4s both; }
+  .next p { font: 400 19px "Kalam", cursive; color: #ead7b8; }
+  .next a { display: inline-block; margin-top: 12px; font: 700 11px "Josefin Sans", sans-serif; letter-spacing: .18em; text-transform: uppercase; color: var(--gold); border-bottom: 1px solid currentColor; }
+  .foot { margin-top: 60px; text-align: center; font: 700 10px "Josefin Sans", sans-serif; letter-spacing: .2em; text-transform: uppercase; color: #c9a882; }
+  .foot a { color: #f6ebd4; border-bottom: 1px solid rgba(246, 235, 212, .4); }
+  @keyframes drop { from { opacity: 0; transform: translateY(-14px); } }
+  @keyframes rise { from { opacity: 0; transform: translateY(40px) rotate(-1.5deg); } }
+  @media (max-width: 640px) { .post { grid-template-columns: 1fr; padding: 28px 22px; } .date { width: 88px; height: 88px; } .date b { font-size: 26px; } .hero { margin-top: 50px; } .bar { justify-content: center; } }
+  @media (prefers-reduced-motion: reduce) { .bar, .hero, .post, .next { animation: none; } }
+</style>
+</head>
+<body>
+<canvas class="map" data-map aria-hidden="true"></canvas>
+<div class="labels" data-labels aria-hidden="true"></div>
+<main class="wrap">
+  <header class="bar">
+    <a class="back" href="./"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M15 5l-7 7 7 7"/></svg>Back to the trail</a>
+    <nav class="bar-links" aria-label="blog links">
+      <a class="btn" href="./#writing">Publications</a>
+      <a class="btn solid" href="https://medium.com/@ojasvissar" target="_blank" rel="noopener noreferrer">Follow on Medium ↗</a>
+    </nav>
+  </header>
+  <section class="hero">
+    <p class="kicker">Field notes · the blog</p>
+    <h1>Field notes</h1>
+    <p class="sub">writing on machine learning, and the world it’s meant for. notes from the field, one entry at a time.</p>
+  </section>
+  <article class="post">
+    <div class="date" aria-hidden="true"><b>17</b><small>Jan 2026</small></div>
+    <div>
+      <p class="meta"><time datetime="2026-01-17">January 17, 2026</time> · 8 min read · Medium</p>
+      <h2><a href="https://medium.com/@ojasvissar/ai-in-the-fight-against-climate-change-predicting-environmental-trends-before-its-too-late-0ca6fadce36f" target="_blank" rel="noopener noreferrer">AI in the Fight Against Climate Change: Predicting Environmental Trends Before It’s Too Late</a></h2>
+      <p class="text">In October 2024, Hurricane Helene caused over $50 billion in damage; weeks later, flooding in Spain killed more than 200 people. Climate change is accelerating, and we need better tools to predict, monitor and respond to it. This piece looks at how machine learning helps forecast environmental trends and natural disasters before it’s too late.</p>
+      <p class="tags"><i>Climate change</i><i>Machine learning</i><i>Data science</i><i>Natural disasters</i></p>
+      <a class="read" href="https://medium.com/@ojasvissar/ai-in-the-fight-against-climate-change-predicting-environmental-trends-before-its-too-late-0ca6fadce36f" target="_blank" rel="noopener noreferrer">Read on Medium <span aria-hidden="true">↗</span></a>
+    </div>
+  </article>
+  <div class="next">
+    <p>the next page of the notebook is still blank. more field notes on the way.</p>
+    <a href="https://medium.com/@ojasvissar" target="_blank" rel="noopener noreferrer">follow along on medium ↗</a>
+  </div>
+  <p class="foot">© 2026 Ojasv Issar · <a href="./">back to the trailhead</a></p>
+</main>
+<script>
+(function () {
+  /* the whole page is a contour map, the same survey style as the work-experience section */
+  var rng = function (seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; };
+  var HR = rng(9017), HASH = []; for (var n = 0; n < 512; n++) HASH.push(HR());
+  function vnoise(x, y) {
+    var xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi, h = function (i, j) { return HASH[((i * 73856093) ^ (j * 19349663)) & 511]; };
+    var u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf), a = h(xi, yi), b = h(xi + 1, yi), c = h(xi, yi + 1), d = h(xi + 1, yi + 1);
+    return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+  }
+  function fbm(x, y, o) { var s = 0, amp = .5, fr = 1; for (var i = 0; i < o; i++) { s += amp * vnoise(x * fr, y * fr); fr *= 2.03; amp *= .5; } return s; }
+  function terrain(x, y) { var wx = fbm(x + 3.1, y + 7.7, 3), wy = fbm(x + 11.3, y + 2.9, 3); return fbm(x + 1.6 * wx, y + 1.6 * wy, 5); }
+  var cv = document.querySelector("[data-map]");
+  function paint() {
+    var W = window.innerWidth, H = window.innerHeight, dpr = Math.min(window.devicePixelRatio || 1, 2), ctx = cv.getContext("2d");
+    cv.width = W * dpr; cv.height = H * dpr; cv.style.width = W + "px"; cv.style.height = H + "px"; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    var ink = getComputedStyle(document.documentElement).getPropertyValue("--ink").trim();
+    var C = 6, cols = Math.ceil(W / C) + 1, rows = Math.ceil(H / C) + 1, S = 1 / 230, field = new Float32Array(cols * rows), lo = 9, hi = -9, i, j;
+    for (j = 0; j < rows; j++) for (i = 0; i < cols; i++) { var v = terrain(i * C * S + 9.6, j * C * S + 3.3); field[j * cols + i] = v; if (v < lo) lo = v; if (v > hi) hi = v; }
+    ctx.save(); ctx.strokeStyle = ink; ctx.globalAlpha = .3; ctx.setLineDash([5, 5]);
+    for (var gx = 128; gx < W; gx += 128) { ctx.beginPath(); ctx.moveTo(gx + .5, 0); ctx.lineTo(gx + .5, H); ctx.stroke(); }
+    for (var gy = 128; gy < H; gy += 128) { ctx.beginPath(); ctx.moveTo(0, gy + .5); ctx.lineTo(W, gy + .5); ctx.stroke(); }
+    ctx.restore(); ctx.strokeStyle = ink; ctx.globalAlpha = .5; ctx.lineWidth = 1;
+    for (var L = 1; L < 34; L++) {
+      var iso = lo + (hi - lo) * L / 34; ctx.beginPath();
+      for (var y = 0; y < rows - 1; y++) for (var x = 0; x < cols - 1; x++) {
+        var k = y * cols + x, a = field[k], bb = field[k + 1], c = field[k + cols + 1], d = field[k + cols];
+        var code = (a > iso ? 8 : 0) | (bb > iso ? 4 : 0) | (c > iso ? 2 : 0) | (d > iso ? 1 : 0);
+        if (code === 0 || code === 15) continue;
+        var px = x * C, py = y * C, T = [px + C * (iso - a) / (bb - a), py], R = [px + C, py + C * (iso - bb) / (c - bb)], B = [px + C * (iso - d) / (c - d), py + C], Lf = [px, py + C * (iso - a) / (d - a)];
+        var seg = function (p, q) { ctx.moveTo(p[0], p[1]); ctx.lineTo(q[0], q[1]); };
+        switch (code) { case 1: case 14: seg(Lf, B); break; case 2: case 13: seg(B, R); break; case 3: case 12: seg(Lf, R); break; case 4: case 11: seg(T, R); break;
+          case 5: seg(Lf, T); seg(B, R); break; case 6: case 9: seg(T, B); break; case 7: case 8: seg(Lf, T); break; case 10: seg(T, R); seg(Lf, B); break; }
+      }
+      ctx.stroke();
+    }
+    var lab = document.querySelector("[data-labels]");
+    lab.innerHTML = [["Red Canyon", 6, 18, -4], ["Sandstone Mesa", 80, 12, 3], ["Dry Wash", 5, 78, 0], ["Clay Bluffs", 82, 86, -2]].map(function (l) {
+      return '<span style="left:' + l[1] + "%;top:" + l[2] + "%;transform:rotate(" + l[3] + 'deg)">' + l[0] + "</span>";
+    }).join("");
+  }
+  paint();
+  var pt; window.addEventListener("resize", function () { clearTimeout(pt); pt = setTimeout(paint, 200); });
+})();
+</script>
+</body>
+</html>
