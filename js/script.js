@@ -29,20 +29,6 @@
 
   /* ── drawing kit ───────────────────────────────────────── */
 
-  // midpoint-displacement line from x0 to x1
-  function jagged(r, x0, y0, x1, y1, amp, rough, levels) {
-    var pts = [[x0, y0], [x1, y1]];
-    for (var l = 0; l < levels; l++) {
-      var next = [pts[0]];
-      for (var i = 1; i < pts.length; i++) {
-        var a = pts[i - 1], b = pts[i];
-        next.push([(a[0] + b[0]) / 2, (a[1] + b[1]) / 2 + (r() - 0.5) * amp], b);
-      }
-      pts = next; amp *= rough;
-    }
-    return pts;
-  }
-
   // layered pine: tiers with drooping teeth, right side in shade
   function pine(r, x, by, h, c1, c2) {
     var tiers = Math.max(4, Math.round(h / 15)), w = h * 0.26, d1 = "", d2 = "";
@@ -90,34 +76,6 @@
       "</g></svg>";
   }
 
-  function grass(r, x, y, h, col, w) {
-    var b = (r() - 0.5) * h * 0.6;
-    return '<path d="M' + f(x) + " " + f(y) + "Q" + f(x + b * 0.4) + " " + f(y - h * 0.6) + " " + f(x + b) + " " + f(y - h) + '" stroke="' + col + '" stroke-width="' + f(w) + '" fill="none" stroke-linecap="round"/>';
-  }
-  function fern(r, x, y, len, ang, col) {
-    var out = "", tx = x + Math.cos(ang) * len, ty = y + Math.sin(ang) * len;
-    out += '<path d="M' + f(x) + " " + f(y) + "L" + f(tx) + " " + f(ty) + '" stroke="' + col + '" stroke-width="1.6"/>';
-    for (var i = 1; i < 11; i++) {
-      var t = i / 11, px = x + (tx - x) * t, py = y + (ty - y) * t, rx = len * 0.13 * (1 - t * 0.75);
-      var deg = ang * 180 / Math.PI;
-      out += '<ellipse cx="' + f(px) + '" cy="' + f(py) + '" rx="' + f(rx) + '" ry="' + f(rx * 0.32) + '" transform="rotate(' + f(deg - 55) + " " + f(px) + " " + f(py) + ') translate(' + f(rx * 0.8) + ' 0)" fill="' + col + '"/>';
-      out += '<ellipse cx="' + f(px) + '" cy="' + f(py) + '" rx="' + f(rx) + '" ry="' + f(rx * 0.32) + '" transform="rotate(' + f(deg + 55) + " " + f(px) + " " + f(py) + ') translate(' + f(rx * 0.8) + ' 0)" fill="' + col + '"/>';
-    }
-    return out;
-  }
-  function fireweed(r, x, y, h) {
-    var out = '<path d="M' + f(x) + " " + f(y) + "q" + f((r() - 0.5) * 8) + " " + f(-h / 2) + " " + f((r() - 0.5) * 6) + " " + f(-h) + '" stroke="#6b7f3f" stroke-width="2" fill="none"/>';
-    for (var i = 0; i < 9; i++) {
-      var t = 0.5 + i / 18, side = i % 2 ? 1 : -1;
-      out += '<ellipse cx="' + f(x + side * (4 - i * 0.3)) + '" cy="' + f(y - h * t) + '" rx="' + f(4.2 - i * 0.28) + '" ry="' + f(2.8 - i * 0.15) + '" fill="' + (i % 3 ? "#c5446f" : "#dd6a93") + '"/>';
-    }
-    return out;
-  }
-  function bush(r, x, y, s, cols) {
-    var out = "";
-    for (var i = 0; i < 6; i++) out += '<circle cx="' + f(x + (r() - 0.5) * s * 1.6) + '" cy="' + f(y - r() * s * 0.8) + '" r="' + f(s * (0.35 + r() * 0.35)) + '" fill="' + pick(r, cols) + '"/>';
-    return out;
-  }
   function cloud(r, x, y, s, fill, shade) {
     var out = '<ellipse cx="' + f(x) + '" cy="' + f(y + s * 0.18) + '" rx="' + f(s * 1.3) + '" ry="' + f(s * 0.28) + '" fill="' + shade + '"/>';
     var n = 5 + Math.floor(r() * 3);
@@ -157,22 +115,22 @@
     });
     layers.push({ d: 0.07, html: soft });
 
-    // the painted range (assets/hero-mountains.*): transparent sky, so our gradient and sun show through
-    layers.push({ d: 0.2, html: '<img class="range" src="assets/hero-mountains.webp" srcset="assets/hero-mountains-1280.webp 1280w, assets/hero-mountains.webp 2048w" sizes="104vw" alt="" decoding="async" fetchpriority="high" />', mountains: true });
+    // the painted range (assets/hero/hero-mountains.*): transparent sky, so our gradient and sun show through
+    layers.push({ d: 0.2, html: '<img class="range" src="assets/hero/hero-mountains.webp" srcset="assets/hero/hero-mountains-1280.webp 1280w, assets/hero/hero-mountains.webp 2048w" sizes="104vw" alt="" decoding="async" fetchpriority="high" />', mountains: true });
 
     layers.push({ d: 0.35, body: '<defs><filter id="mb" x="-20%" y="-200%" width="140%" height="500%"><feGaussianBlur stdDeviation="18"/></filter></defs><g class="mist" filter="url(#mb)"><ellipse cx="380" cy="760" rx="420" ry="36" fill="#f3f1e4" opacity=".45"/><ellipse cx="1120" cy="740" rx="360" ry="30" fill="#f3f1e4" opacity=".4"/></g>' });
 
-    // forested foothills (assets/hero-hills.*): in front of the big range, behind the tall pines
-    layers.push({ d: 0.4, html: '<img class="range hills" src="assets/hero-hills.webp" srcset="assets/hero-hills-1280.webp 1280w, assets/hero-hills.webp 2048w" sizes="104vw" alt="" decoding="async" fetchpriority="high" />' });
+    // forested foothills (assets/hero/hero-hills.*): in front of the big range, behind the tall pines
+    layers.push({ d: 0.4, html: '<img class="range hills" src="assets/hero/hero-hills.webp" srcset="assets/hero/hero-hills-1280.webp 1280w, assets/hero/hero-hills.webp 2048w" sizes="104vw" alt="" decoding="async" fetchpriority="high" />' });
 
-    // the painted forest (assets/hero-forest.*) sits in front and moves faster, like the near layer of a diorama
-    layers.push({ d: 0.55, html: '<img class="range forest" src="assets/hero-forest.webp" srcset="assets/hero-forest-1280.webp 1280w, assets/hero-forest.webp 2048w" sizes="104vw" alt="" decoding="async" fetchpriority="high" />' });
+    // the painted forest (assets/hero/hero-forest.*) sits in front and moves faster, like the near layer of a diorama
+    layers.push({ d: 0.55, html: '<img class="range forest" src="assets/hero/hero-forest.webp" srcset="assets/hero/hero-forest-1280.webp 1280w, assets/hero/hero-forest.webp 2048w" sizes="104vw" alt="" decoding="async" fetchpriority="high" />' });
 
-    // the painted meadow (assets/hero-meadow.*) is the closest layer and moves the most
-    layers.push({ d: 0.8, html: '<img class="range meadow" src="assets/hero-meadow.webp" srcset="assets/hero-meadow-1280.webp 1280w, assets/hero-meadow.webp 2048w" sizes="104vw" alt="" decoding="async" />' });
+    // the painted meadow (assets/hero/hero-meadow.*) is the closest layer and moves the most
+    layers.push({ d: 0.8, html: '<img class="range meadow" src="assets/hero/hero-meadow.webp" srcset="assets/hero/hero-meadow-1280.webp 1280w, assets/hero/hero-meadow.webp 2048w" sizes="104vw" alt="" decoding="async" />' });
 
     var flock = [[1, 20, 29, 34, -7], [2, 15, 30.5, 34, -8.2], [3, 24, 32, 29, -19], [1, 13, 28, 43, -3], [2, 18, 31, 38, -26], [3, 14, 30, 36, -14], [1, 16, 29, 31, -22], [2, 12, 30, 40, -31], [3, 17, 31, 33, -2], [1, 11, 28, 45, -12]].map(function (b) {
-      return '<img class="bird" src="assets/bird-' + b[0] + '.webp" alt="" style="--w:' + b[1] + "px;--y:" + b[2] + "%;--t:" + b[3] + "s;--dl:" + b[4] + 's" />';
+      return '<img class="bird" src="assets/hero/bird-' + b[0] + '.webp" alt="" style="--w:' + b[1] + "px;--y:" + b[2] + "%;--t:" + b[3] + "s;--dl:" + b[4] + 's" />';
     }).join("");
     var flies = "";
     for (var k = 0; k < 28; k++) {
@@ -594,227 +552,43 @@
     $$(".reveal").forEach(function (el) { io.observe(el); });
   } else $$(".reveal").forEach(function (el) { el.classList.add("in"); });
 
-  /* ── park galleries ────────────────────────────────────── */
-  var BIOMES = {
-    forest: { sky: ["#cddfd5", "#f2e9d0"], sun: false, cloud: ["#fbf5e4", "#e7dcc2"], sea: "#8db2bc",
-      ridges: [{ y: 240, amp: 90, col: "#a3b6ab", snow: "#eef2ee" }, { y: 290, amp: 60, col: "#7f9885" }],
-      rows: [{ y: 330, h: [40, 70], c: ["#5d7a5f", "#4f6b52"], n: 26 }, { y: 400, h: [80, 140], c: ["#3f5e43", "#34503a"], n: 12 }], ground: "#52703f" },
-    prairie: { sky: ["#f4dca0", "#f6eed6"], sun: "#fbe7a1", cloud: ["#fdf6e4", "#efdcb4"],
-      soft: [{ y: 300, amp: 26, col: "#c7b389" }, { y: 330, amp: 20, col: "#b99f62" }], fields: ["#d9b85c", "#e7c979", "#c9a34a", "#dcc070"], ground: "#c9a34a" },
-    desert: { sky: ["#efcd92", "#f7ead0"], sun: "#fbe4a0", cloud: ["#fdf3e0", "#efd3aa"],
-      mesas: [{ y: 270, col: "#d19a70" }, { y: 320, col: "#b95a31" }], ground: "#c46a3a" },
-    coast: { sky: ["#d3e2e6", "#f3ead2"], sun: false, cloud: ["#fbf6ea", "#dfdcce"],
-      ridges: [{ y: 250, amp: 70, col: "#a8b7b9" }], sea: "#6d97a7", dune: "#e2ce9b", ground: "#d9c28a" },
-    alpine: { sky: ["#d2e2ec", "#f3f0e8"], sun: false, cloud: ["#fbfbf8", "#dde3e6"],
-      ridges: [{ y: 220, amp: 130, col: "#b8c6d2", snow: "#f7f9fa" }, { y: 290, amp: 90, col: "#8ea1b2", snow: "#f2f5f7" }],
-      rows: [{ y: 380, h: [60, 100], c: ["#2f4a3d", "#263e33"], n: 14, snowy: true }], ground: "#eef2f4" }
-  };
-
-  function scene(key, seed) {
-    var B = BIOMES[key], r = rng(seed), W = 800, H = 500;
-    var s = '<defs><linearGradient id="sky' + seed + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + B.sky[0] + '"/><stop offset="1" stop-color="' + B.sky[1] + '"/></linearGradient></defs><rect width="800" height="500" fill="url(#sky' + seed + ')"/>';
-    if (B.sun) s += '<circle cx="' + f(520 + r() * 200) + '" cy="80" r="34" fill="' + B.sun + '"/>';
-    for (var c = 0; c < 3; c++) s += cloud(r, 80 + c * 260 + r() * 80, 70 + r() * 70, 40 + r() * 30, B.cloud[0], B.cloud[1]);
-    (B.ridges || []).forEach(function (R) {
-      var line = jagged(r, 0, R.y + r() * 30, W, R.y + r() * 30, R.amp, 0.55, 6);
-      if (R.snow) {
-        s += '<path d="' + poly([[0, H]].concat(line).concat([[W, H]])) + '" fill="' + R.snow + '"/>';
-        var low = line.map(function (p) { return [p[0], p[1] + 24 + r() * 26]; });
-        s += '<path d="' + poly([[0, H]].concat(low).concat([[W, H]])) + '" fill="' + R.col + '"/>';
-      } else s += '<path d="' + poly([[0, H]].concat(line).concat([[W, H]])) + '" fill="' + R.col + '"/>';
-    });
-    (B.soft || []).forEach(function (R) {
-      var pts = [[0, H]], ph = r() * 6;
-      for (var x = 0; x <= W; x += 20) pts.push([x, R.y + Math.sin(x / 120 + ph) * R.amp + Math.sin(x / 47 + ph * 2) * R.amp * 0.3]);
-      pts.push([W, H]); s += '<path d="' + poly(pts) + '" fill="' + R.col + '"/>';
-    });
-    (B.mesas || []).forEach(function (R, i) {
-      var pts = [[0, H]], x = 0, y = R.y;
-      while (x < W) {
-        var plateau = 60 + r() * 140, cliff = 8 + r() * 14, ny = R.y + (r() - 0.4) * 70;
-        pts.push([x, y], [x + plateau, y + (r() - 0.5) * 4]);
-        x += plateau; pts.push([x + cliff, ny]); x += cliff; y = ny;
-      }
-      pts.push([W, y], [W, H]);
-      s += '<path d="' + poly(pts) + '" fill="' + R.col + '"/>';
-      if (i === 1) for (var st = 0; st < 30; st++) { var sy = R.y + 10 + r() * 60; s += '<path d="M' + f(r() * W) + " " + f(sy) + "h" + f(20 + r() * 60) + '" stroke="#9c4623" stroke-width="2" opacity=".5"/>'; }
-    });
-    if (B.sea) s += '<rect y="' + (key === "forest" ? 318 : 300) + '" width="800" height="120" fill="' + B.sea + '"/>' + (function () { var l = ""; for (var w = 0; w < 14; w++) l += '<path d="M' + f(r() * W) + " " + f(310 + r() * 90) + "h" + f(20 + r() * 50) + '" stroke="#fff" stroke-width="2" opacity=".45"/>'; return l; })();
-    if (B.dune) s += '<path d="' + poly([[0, H], [0, 370]].concat(jagged(r, 0, 370, W, 380, 30, 0.5, 5)).concat([[W, H]])) + '" fill="' + B.dune + '"/>';
-    if (B.fields) {
-      for (var fl = 0; fl < 4; fl++) {
-        var y0 = 340 + fl * 40;
-        s += '<path d="' + poly([[0, H], [0, y0]].concat(jagged(r, 0, y0, W, y0 + 10, 16, 0.5, 4)).concat([[W, H]])) + '" fill="' + B.fields[fl] + '"/>';
-      }
-      s += '<g transform="translate(' + f(560 + r() * 120) + ' 318)"><rect x="-22" y="-26" width="44" height="30" fill="#a8412c"/><path d="M-26-26L0-46L26-26Z" fill="#7d2f20"/><rect x="-6" y="-12" width="12" height="16" fill="#f3e6c8"/></g>';
-      for (var tr = 0; tr < 5; tr++) s += bush(r, 80 + r() * 640, 332, 12, ["#6f7d3e", "#86924a"]);
-    }
-    if (B.mesas) {
-      s += '<rect y="400" width="800" height="100" fill="' + B.ground + '"/>';
-      for (var jn = 0; jn < 7; jn++) s += bush(r, r() * W, 408 + r() * 30, 14 + r() * 10, ["#5e6b3a", "#6f7c45", "#4f5b30"]);
-    }
-    (B.rows || []).forEach(function (R) {
-      for (var n = 0; n < R.n; n++) {
-        var px = r() * W, h = R.h[0] + r() * (R.h[1] - R.h[0]);
-        s += pine(r, px, R.y + r() * 20, h, R.c[0], R.c[1]);
-        if (R.snowy) s += '<path d="M' + f(px) + " " + f(R.y - h * 0.9) + "l" + f(h * 0.08) + " " + f(h * 0.15) + "h" + f(-h * 0.16) + 'Z" fill="#fff" opacity=".9"/>';
-      }
-    });
-    if (B.ground && !B.mesas && !B.fields) s += '<path d="' + poly([[0, H]].concat(jagged(r, 0, 430, W, 440, 20, 0.5, 5)).concat([[W, H]])) + '" fill="' + B.ground + '"/>';
-    return svg("0 0 800 500", s, "xMidYMid slice");
-  }
-
-  function foreground(key, seed) {
-    var r = rng(seed * 7 + 3), W = 800, H = 230, s = "";
-    function rocks(n, cols, y, sz) {
-      for (var i = 0; i < n; i++) {
-        var x = r() * W, w = sz * (0.6 + r()), h = w * (0.5 + r() * 0.3), c = pick(r, cols);
-        s += '<path d="M' + f(x - w) + " " + f(y) + "Q" + f(x - w * 0.9) + " " + f(y - h) + " " + f(x) + " " + f(y - h) + "Q" + f(x + w * 0.9) + " " + f(y - h * 0.9) + " " + f(x + w) + " " + f(y) + 'Z" fill="' + c + '"/><path d="M' + f(x - w * 0.5) + " " + f(y - h * 0.8) + "Q" + f(x) + " " + f(y - h * 1.02) + " " + f(x + w * 0.6) + " " + f(y - h * 0.75) + '" stroke="#fff" stroke-width="2" opacity=".25" fill="none"/>';
-      }
-    }
-    if (key === "forest") {
-      s += '<path d="M0 230L0 190Q200 170 400 188T800 184L800 230Z" fill="#3f5a36"/>';
-      rocks(4, ["#8d8a7c", "#9c9888", "#7c7a6e"], 226, 34);
-      for (var i = 0; i < 22; i++) s += fern(r, r() * W, 230, 40 + r() * 40, -Math.PI / 2 + (r() - 0.5) * 1.4, pick(r, ["#4f7a3b", "#5d8a44"]));
-      for (var g = 0; g < 160; g++) s += grass(r, r() * W, 230, 20 + r() * 50, pick(r, ["#5d7d3f", "#7a9a4d", "#8fa860"]), 1.5 + r() * 1.5);
-      for (var fw = 0; fw < 6; fw++) s += fireweed(r, r() * W, 230, 60 + r() * 40);
-    } else if (key === "prairie") {
-      s += '<path d="M0 230L0 196Q200 184 400 194T800 190L800 230Z" fill="#b8913c"/>';
-      for (var w = 0; w < 70; w++) {
-        var x = r() * W, h = 60 + r() * 80;
-        s += grass(r, x, 230, h, "#b28a37", 1.8);
-        s += '<ellipse cx="' + f(x + (r() - 0.5) * 6) + '" cy="' + f(230 - h) + '" rx="3.2" ry="11" fill="' + pick(r, ["#e0b24b", "#d49f36", "#ecc466"]) + '" transform="rotate(' + f((r() - 0.5) * 30) + " " + f(x) + " " + f(230 - h) + ')"/>';
-      }
-      for (var gg = 0; gg < 120; gg++) s += grass(r, r() * W, 230, 20 + r() * 40, pick(r, ["#9aa04e", "#b8a14f", "#8c8f44"]), 1.5);
-    } else if (key === "desert") {
-      s += '<path d="M0 230L0 200Q200 188 400 198T800 192L800 230Z" fill="#b8582d"/>';
-      rocks(6, ["#c0643a", "#a8512b", "#d0784a"], 228, 36);
-      for (var a = 0; a < 5; a++) {
-        var ax = r() * W, out = "";
-        for (var l = 0; l < 14; l++) { var ang = -Math.PI / 2 + (l / 13 - 0.5) * 2.4, len = 40 + r() * 40; out += '<path d="M' + f(ax) + " 228Q" + f(ax + Math.cos(ang) * len * 0.5) + " " + f(228 + Math.sin(ang) * len * 0.6) + " " + f(ax + Math.cos(ang) * len) + " " + f(228 + Math.sin(ang) * len) + '" stroke="' + pick(r, ["#6d7a4c", "#7f8c58", "#5e6b40"]) + '" stroke-width="5" stroke-linecap="round" fill="none"/>'; }
-        s += out;
-      }
-      for (var sb = 0; sb < 12; sb++) s += bush(r, r() * W, 228, 16 + r() * 12, ["#9aa27a", "#aab08a", "#8a9468"]);
-    } else if (key === "coast") {
-      s += '<path d="M0 230L0 192Q200 176 400 190T800 186L800 230Z" fill="#d6be86"/>';
-      rocks(4, ["#8f8b80", "#a19c8f"], 228, 30);
-      for (var dg = 0; dg < 150; dg++) s += grass(r, r() * W, 230, 30 + r() * 70, pick(r, ["#b9a36a", "#a58f55", "#c9b57c", "#8f8c55"]), 1.6);
-    } else if (key === "alpine") {
-      s += '<path d="M0 230L0 188Q200 170 400 186T800 182L800 230Z" fill="#f4f6f7"/>';
-      rocks(5, ["#7d8690", "#8f98a1", "#6c747d"], 226, 36);
-      for (var sr = 0; sr < 6; sr++) { var rx = r() * W; s += '<path d="M' + f(rx - 30) + " 206q30-26 60 0z" + '" fill="#fff"/>'; }
-      for (var fi = 0; fi < 5; fi++) s += pine(r, r() * W, 232, 70 + r() * 60, "#2f4a3d", "#263e33");
-      for (var ag = 0; ag < 60; ag++) s += grass(r, r() * W, 230, 14 + r() * 24, pick(r, ["#8a8f6a", "#a5a47c"]), 1.4);
-    }
-    return svg("0 0 800 230", s, "xMidYMax slice");
-  }
-
-  /* tiny chart helpers for the ui mocks */
-  function series(r, n, start, drift, noise) {
-    var v = start, out = [];
-    for (var i = 0; i < n; i++) { v += drift + (r() - 0.5) * noise; out.push(v); }
-    return out;
-  }
-  function lineChart(sets, opt) {
-    opt = opt || {};
-    var W = 300, H = opt.h || 110, all = [].concat.apply([], sets.map(function (s) { return s.v; }));
-    var lo = Math.min.apply(null, all), hi = Math.max.apply(null, all), g = "";
-    for (var gy = 0; gy < 4; gy++) g += '<path d="M0 ' + f(10 + gy * (H - 20) / 3) + 'H300" stroke="#eeece6" stroke-width="1"/>';
-    sets.forEach(function (s) {
-      var d = s.v.map(function (v, i) { return (i ? "L" : "M") + f(i / (s.v.length - 1) * (W - 4) + 2) + " " + f(H - 8 - (v - lo) / (hi - lo || 1) * (H - 20)); }).join("");
-      if (s.area) g += '<path d="' + d + "L" + (W - 2) + " " + H + "L2 " + H + 'Z" fill="' + s.c + '" opacity=".12"/>';
-      g += '<path d="' + d + '" fill="none" stroke="' + s.c + '" stroke-width="' + (s.w || 2) + '"' + (s.dash ? ' stroke-dasharray="5 4"' : "") + ' stroke-linejoin="round"/>';
-    });
-    return '<svg viewBox="0 0 ' + W + " " + H + '">' + g + (opt.extra || "") + "</svg>";
-  }
-  function bars(vals, cols, opt) {
-    opt = opt || {};
-    var W = 300, H = opt.h || 110, n = vals.length, bw = W / n * 0.62, g = "", mx = Math.max.apply(null, vals.map(function (v) { return Array.isArray(v) ? v.reduce(function (a, b) { return a + b; }, 0) : v; }));
-    vals.forEach(function (v, i) {
-      var x = i * W / n + (W / n - bw) / 2, stack = Array.isArray(v) ? v : [v], y = H - 4;
-      stack.forEach(function (sv, k) { var h = sv / mx * (H - 16); y -= h; g += '<rect x="' + f(x) + '" y="' + f(y) + '" width="' + f(bw) + '" height="' + f(h) + '" rx="2" fill="' + (Array.isArray(cols[0]) ? cols[i][k] : cols[k % cols.length]) + '"/>'; });
-    });
-    return '<svg viewBox="0 0 ' + W + " " + H + '">' + g + '<path d="M0 ' + (H - 3) + 'H300" stroke="#e2dfd6"/></svg>';
-  }
-  function grid(r, cols, rows, palette) {
-    var g = "", cw = 300 / cols, ch = 150 / rows;
-    for (var y = 0; y < rows; y++) for (var x = 0; x < cols; x++) {
-      var v = (Math.sin(x / 2.2 + y / 3) + 1) / 2 * 0.7 + r() * 0.3;
-      g += '<rect x="' + f(x * cw + 1) + '" y="' + f(y * ch + 1) + '" width="' + f(cw - 2) + '" height="' + f(ch - 2) + '" rx="1.5" fill="' + palette[Math.min(palette.length - 1, Math.floor(v * palette.length))] + '"/>';
-    }
-    return '<svg viewBox="0 0 300 150">' + g + "</svg>";
-  }
-  function worldMap(r) {
-    var land = '<path d="M30 40c20-18 70-22 90-6 14 12 4 30-16 36-12 4-10 18-24 22-20 6-44-10-50-26-4-10-6-18 0-26zM110 92c14-4 26 8 24 24-2 18-14 30-24 26-10-6-8-22-6-32 1-8 0-16 6-18zM150 34c24-14 70-16 100 0 20 10 30 26 18 36-14 12-40 4-56 14-14 8-20 22-38 16-18-6-16-26-28-36-6-8-4-24 4-30zM210 104c14-8 36-6 44 6 6 10-4 22-20 22-14 0-30-6-30-16 0-6 2-10 6-12z" fill="#e6e1d3"/>';
-    var dots = "", cols = ["#e8664d", "#4f8fd6", "#f0b53d", "#6aa85a", "#9a6fd0"];
-    for (var i = 0; i < 26; i++) dots += '<circle cx="' + f(30 + r() * 240) + '" cy="' + f(30 + r() * 100) + '" r="' + f(2 + r() * 7) + '" fill="' + pick(r, cols) + '" opacity=".75"/>';
-    return '<svg viewBox="0 0 300 160"><rect width="300" height="160" fill="#f6f8fa"/>' + land + dots + "</svg>";
-  }
-
+  /* ── project figures ───────────────────────────────────── */
   var PARKS = {
-    reddit: { biome: "forest", slides: [
-      { cap: "<b>Weekly digest:</b> Claude Sonnet turns a week of r/UBC into one readable summary",
-        ui: function () { return '<div class="bar"><i></i><i></i><i></i><span>Inbox</span><em>Mon 8:00</em></div><div class="pad"><p><span class="chip g">UBC Reporter</span> <span class="muted">weekly digest</span></p><p class="h" style="margin-top:.6em">r/UBC this week</p><p class="muted">summarised by claude sonnet · categorised by llama 3</p>' +
-          '<p style="margin-top:.8em"><span class="chip b">Housing</span></p><div class="line" style="width:92%"></div><div class="line" style="width:78%"></div>' +
-          '<p style="margin-top:.6em"><span class="chip o">Courses</span></p><div class="line" style="width:88%"></div><div class="line" style="width:64%"></div>' +
-          '<p style="margin-top:.6em"><span class="chip p">Events</span></p><div class="line" style="width:80%"></div></div>'; } },
-      { cap: "<b>Post triage:</b> Llama 3 sorts every post into a category, with a confidence score",
-        ui: function () { var rows = [["b", "Housing", 92], ["o", "Courses", 86], ["p", "Events", 78], ["g", "Campus life", 71], ["b", "Housing", 64], ["o", "Courses", 58]];
-          return '<div class="bar"><i></i><i></i><i></i><span>Triage</span><em>llama 3 · bedrock</em></div><div class="pad">' + rows.map(function (x) { return '<div class="row"><div style="flex:1"><div class="line" style="width:' + (60 + x[2] % 30) + '%;margin:0"></div></div><span class="chip ' + x[0] + '">' + x[1] + '</span><span class="meter"><b style="width:' + x[2] + '%"></b></span></div>'; }).join("") + '<p class="muted" style="margin-top:.6em">bar = model confidence</p></div>'; } },
-      { cap: "<b>Serverless pipeline:</b> four independent Lambdas on AWS SAM, scheduled by EventBridge",
-        ui: function () { return '<div class="bar"><i></i><i></i><i></i><span>template.yaml</span><em>aws sam</em></div><div class="flow"><div class="node">EventBridge<small>weekly schedule</small></div><span class="arrow">→</span><div class="node">λ fetch<small>reddit posts</small></div><span class="arrow">→</span><div class="node hot">λ classify<small>llama 3</small></div><span class="arrow">→</span><div class="node hot">λ summarise<small>claude sonnet</small></div><span class="arrow">→</span><div class="node">λ send<small>postmark</small></div></div><div class="pad" style="padding-top:0"><div class="card"><span class="chip">S3</span> <span class="muted">every run persisted for replay and audit</span></div></div>'; } }
-    ] },
-    crop: { biome: "prairie", slides: [
-      { cap: "<b>Satellite + weather fusion:</b> MMST-ViT reads imagery and weather side by side",
-        ui: function (r) { return '<div class="bar"><i></i><i></i><i></i><span>mmst-vit</span><em>pytorch</em></div><div class="pad cols"><div class="card"><p class="muted">satellite tiles</p>' + grid(r, 12, 6, ["#e9f1d8", "#c9dfa4", "#9fc672", "#6fa24a", "#487a33"]) + '</div><div class="card"><p class="muted">weather</p>' + lineChart([{ v: series(r, 30, 10, 0.1, 3), c: "#e8664d" }, { v: series(r, 30, 5, 0, 4), c: "#4f8fd6" }], { h: 100 }) + '</div></div><div class="pad" style="padding-top:0"><div class="card"><p class="muted">yield forecast</p>' + lineChart([{ v: series(r, 40, 10, 0.08, 1.6), c: "#6aa85a", area: true }], { h: 70 }) + "</div></div>"; } },
-      { cap: "<b>Contrastive pre-training:</b> SimCLR teaches the PVT backbone what fields look like",
-        ui: function (r) { var loss = []; for (var i = 0; i < 40; i++) loss.push(6 * Math.exp(-i / 11) + 1 + (r() - 0.5) * 0.35);
-          return '<div class="bar"><i></i><i></i><i></i><span>main_pretrain_mmst_vit.py</span><em>nt-xent loss</em></div><div class="pad"><p class="muted">contrastive loss by epoch</p>' + lineChart([{ v: loss, c: "#6aa85a", area: true }], { h: 120 }) + '<p style="margin-top:.6em"><span class="chip g">SimCLR</span> <span class="chip">PVT backbone</span> <span class="chip">Sentinel-2 tiles</span></p></div>'; } },
-      { cap: "<b>Spatial + temporal:</b> county grids, then the whole growing season",
-        ui: function () { return '<div class="bar"><i></i><i></i><i></i><span>models_mmst_vit.py</span><em>architecture</em></div><div class="flow"><div class="node">Sentinel-2<small>satellite tiles</small></div><span class="arrow">→</span><div class="node">PVT<small>pre-trained</small></div><span class="arrow">→</span><div class="node hot">spatial<small>attention</small></div><span class="arrow">→</span><div class="node hot">temporal<small>attention</small></div><span class="arrow">→</span><div class="node">yield<small>per county</small></div></div><div class="pad" style="padding-top:0"><div class="card"><span class="chip b">HRRR weather</span> <span class="chip">long-term climate</span> <span class="chip o">USDA stats</span></div></div>'; } }
-    ] },
-    asteroid: { biome: "desert", slides: [
-      { cap: "<b>Class imbalance:</b> about 0.2% of 958,524 records are hazardous",
-        ui: function () { return '<div class="bar"><i></i><i></i><i></i><span>eda.ipynb</span><em>nasa / jpl</em></div><div class="pad cols"><div><p class="muted">records</p><p class="kpi">958,524</p><p style="margin-top:.6em"><span class="chip o">PHO</span> <span class="chip">not hazardous</span></p><p class="muted" style="margin-top:.8em">SMOTENC tested, and it turned out not to help</p></div><div><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="44" fill="none" stroke="#e6e3da" stroke-width="18"/><circle cx="60" cy="60" r="44" fill="none" stroke="#e8664d" stroke-width="18" stroke-dasharray="6 300" transform="rotate(-90 60 60)"/></svg></div></div>'; } },
-      { cap: "<b>Feature importance:</b> orbit intersection distance and absolute magnitude lead",
-        ui: function () { var items = [["moid", 96], ["absolute magnitude H", 84], ["", 46], ["", 38], ["", 27], ["", 18]];
-          return '<div class="bar"><i></i><i></i><i></i><span>feature importance</span><em>xgboost</em></div><div class="pad">' + items.map(function (x, i) { return '<div class="row"><span style="flex:0 0 38%">' + (x[0] ? "<b>" + x[0] + "</b>" : '<span class="line" style="display:block;width:70%;margin:0"></span>') + '</span><span style="flex:1;height:.8em;border-radius:4px;background:#f1efe9;overflow:hidden"><b style="display:block;height:100%;width:' + x[1] + '%;background:' + (i < 2 ? "#e8664d" : "#c9c3b5") + '"></b></span></div>'; }).join("") + "</div>"; } },
-      { cap: "<b>Test results:</b> 89% recall and 99.7% precision on 187,720 held-out rows",
-        ui: function () { return '<div class="bar"><i></i><i></i><i></i><span>evaluate.py</span><em>confusion matrix</em></div><div class="pad"><div class="cm"><span></span><span class="muted">predicted PHO</span><span class="muted">predicted safe</span><span class="muted">actual PHO</span><div style="background:#dff1e1;color:#2f7a3a">379</div><div style="background:#fde3dc;color:#a8481f">47</div><span class="muted">actual safe</span><div style="background:#fdf0d8;color:#8a6410">1</div><div style="background:#e9eef6;color:#43506a">187,293</div></div><p style="margin-top:.8em"><span class="chip">RFECV</span> <span class="chip">robust scaler</span> <span class="chip o">XGBoost</span> <span class="chip g">ROC-AUC ~0.99</span></p></div>'; } }
-    ] },
-    disaster: { biome: "coast", slides: [
-      { cap: "<b>World view:</b> disaster frequency on a map, filtered by type, date and country",
-        ui: function (r) { return '<div class="bar"><i></i><i></i><i></i><span>DisasterDash</span><em>shiny for python</em></div><div class="side"><p class="muted">disaster type</p><p style="line-height:2.1"><span class="chip o">flood</span> <span class="chip b">storm</span><br /><span class="chip" style="background:#fdf1d6;color:#8a6410">drought</span> <span class="chip g">wildfire</span><br /><span class="chip p">earthquake</span></p><p class="muted" style="margin-top:.6em">region</p><div class="line"></div><div class="line" style="width:70%"></div></div><div class="main">' + worldMap(r) + "</div>"; } },
-      { cap: "<b>The aid gap:</b> economic losses against the aid that actually arrived",
-        ui: function (r) { return '<div class="bar"><i></i><i></i><i></i><span>DisasterDash</span><em>trends</em></div><div class="pad">' + lineChart([{ v: series(r, 40, 4, 0.12, 2), c: "#4f8fd6", area: true }, { v: series(r, 40, 2, 0.08, 1.5), c: "#e8664d", area: true }], { h: 130 }) + '<div style="margin-top:.8em;height:.5em;border-radius:4px;background:#eceae4;position:relative"><b style="position:absolute;left:30%;right:15%;top:0;bottom:0;background:#4f8fd6;border-radius:4px"></b></div><p class="muted" style="margin-top:.4em">year range</p></div>'; } },
-      { cap: "<b>AI Explorer:</b> ask the data questions in plain English",
-        ui: function () { return '<div class="bar"><i></i><i></i><i></i><span>DisasterDash</span><em>ai explorer · claude</em></div><div class="pad"><div class="card" style="margin-left:18%;background:#eef2f7"><p>Which countries had the biggest gap between losses and aid in 2010?</p></div><div class="card" style="margin-top:.7em;margin-right:12%"><p class="muted">querying EM-DAT…</p><div class="line" style="width:92%"></div><div class="line" style="width:74%"></div><div class="line" style="width:58%"></div></div><p style="margin-top:.7em"><span class="chip p">natural language</span> <span class="chip">anthropic api</span></p></div>'; } }
-    ] },
-    temp: { biome: "alpine", slides: [
-      { cap: "<b>222 years:</b> Berkeley Earth land temperature records, 1800s to today",
-        ui: function (r) { return '<div class="bar"><i></i><i></i><i></i><span>report.qmd</span><em>quarto</em></div><div class="pad"><p class="h">Land average temperature</p><p class="muted">berkeley earth · annual mean</p>' + lineChart([{ v: series(r, 110, 0, 0.018, 0.9), c: "#e8664d", w: 1.4 }], { h: 140 }) + "</div>"; } },
-      { cap: "<b>Model benchmark:</b> OLS vs random forest vs kernel SVR on RMSE, MAE and R²",
-        ui: function () { var m = [["OLS", 60, 58, 52], ["Random forest", 44, 46, 70], ["Kernel SVR", 40, 40, 74]];
-          return '<div class="bar"><i></i><i></i><i></i><span>benchmark</span><em>scikit-learn</em></div><div class="pad"><div class="row muted"><span style="flex:0 0 30%">model</span><span style="flex:1">RMSE</span><span style="flex:1">MAE</span><span style="flex:1">R²</span></div>' + m.map(function (x) { return '<div class="row"><b style="flex:0 0 30%">' + x[0] + '</b>' + [1, 2, 3].map(function (k) { return '<span style="flex:1"><span class="meter" style="display:block;width:80%"><b style="width:' + x[k] + '%;background:#4f8fd6"></b></span></span>'; }).join("") + "</div>"; }).join("") + '<p style="margin-top:.8em"><span class="chip">docker</span> <span class="chip">pytest</span> <span class="chip">quarto</span></p></div>'; } },
-      { cap: "<b>2030 projection:</b> 10.56°C, roughly 2°C above the 1951 to 1980 baseline",
-        ui: function (r) { var hist = series(r, 50, 0, 0.05, 0.7), last = hist[hist.length - 1], fc = []; for (var i = 0; i < 50; i++) fc.push(i < 38 ? NaN : last + (i - 38) * 0.12);
-          var vals = hist.concat([]); var W = 300, H = 140, lo = Math.min.apply(null, hist) - 0.5, hi = last + 1.8;
-          var toY = function (v) { return H - 10 - (v - lo) / (hi - lo) * (H - 24); };
-          var d = hist.map(function (v, i) { return (i ? "L" : "M") + f(i / 60 * W) + " " + f(toY(v)); }).join("");
-          var fx0 = 49 / 60 * W, d2 = "M" + f(fx0) + " " + f(toY(last)) + "L" + f(W - 6) + " " + f(toY(hi - 0.3));
-          var base = toY(lo + (last - lo) * 0.3);
-          return '<div class="bar"><i></i><i></i><i></i><span>forecast</span><em>kernel svr</em></div><div class="pad"><svg viewBox="0 0 300 140"><path d="M0 ' + f(base) + 'H300" stroke="#9aa3ad" stroke-dasharray="4 4"/><text x="4" y="' + f(base - 4) + '" font-size="8" fill="#8a8f98">1951–80 baseline</text><path d="' + d + '" fill="none" stroke="#e8664d" stroke-width="1.6"/><path d="' + d2 + '" fill="none" stroke="#e8664d" stroke-width="2" stroke-dasharray="5 4"/><circle cx="' + f(W - 6) + '" cy="' + f(toY(hi - 0.3)) + '" r="4" fill="#e8664d"/><text x="' + f(W - 60) + '" y="' + f(toY(hi - 0.3) - 8) + '" font-size="11" font-weight="700" fill="#1f2328">10.56°C</text><text x="' + f(W - 32) + '" y="136" font-size="8" fill="#8a8f98">2030</text></svg><p style="margin-top:.4em"><span class="chip o">+~2°C</span> <span class="muted">vs 1951–80</span></p></div>'; } }
-    ] }
+    reddit: [
+      ["reddit-1", "<b>The source:</b> every r/UBC post from the last seven days"],
+      ["reddit-2", "<b>The pipeline:</b> four Lambdas on AWS SAM, run weekly by EventBridge"],
+      ["reddit-3", "<b>The digest:</b> Llama 3 sorts, Claude summarises, Postmark delivers (example content)"]
+    ],
+    crop: [
+      ["crop-1", "<b>The inputs:</b> Sentinel-2 imagery, HRRR weather, climate records and USDA yields"],
+      ["crop-2", "<b>The model:</b> a SimCLR-pretrained PVT, then spatial and temporal attention"],
+      ["crop-3", "<b>The season:</b> the temporal transformer reads April to October"]
+    ],
+    asteroid: [
+      ["ast-1", "<b>The problem:</b> about 0.2% of 958,524 records are hazardous"],
+      ["ast-2", "<b>The pipeline:</b> RFECV, robust scaling and XGBoost, tested against other models"],
+      ["ast-3", "<b>Test results:</b> 89% recall and 99.7% precision on 187,720 held-out rows"]
+    ],
+    disaster: [
+      ["dd-1", "<b>Overview:</b> losses, aid and disaster counts on one map, filtered by type, date and country"],
+      ["dd-2", "<b>AI Explorer:</b> ask in plain English, get a filtered table"],
+      ["dd-3", "<b>The assistant:</b> Claude turns a question into a dataset query"]
+    ],
+    temp: [
+      ["temp-1", "<b>222 years:</b> Berkeley Earth land temperature records, 1800 to 2022"],
+      ["temp-2", "<b>Model benchmark:</b> linear regression, random forest and kernel SVR on a time split"],
+      ["temp-3", "<b>2030 projection:</b> about 10.56°C, roughly 2°C above the 1951 to 1980 baseline"]
+    ]
   };
 
   // each project's screens, taped into its journal page
-  $$("[data-park]").forEach(function (park, pi) {
+  $$("[data-park]").forEach(function (park) {
     var P = PARKS[park.getAttribute("data-park")], host = $("[data-shots]", park);
     if (!P || !host) return;
-    host.innerHTML = P.slides.map(function (sl, i) {
-      var seed = 101 + pi * 17 + i * 5, r = rng(seed * 3), label = (sl.cap.match(/<b>(.*?):?<\/b>/) || ["", ""])[1].toLowerCase();
-      return '<figure class="jn-shot" style="--i:' + i + '" title="' + sl.cap.replace(/<[^>]+>/g, "") + '">' + (i ? '<i class="jn-tape jn-t4"></i>' : '<i class="jn-tape jn-t1"></i><i class="jn-tape jn-t2"></i>') +
-        '<div class="frame"><div class="scene">' + scene(P.biome, seed) + '</div><div class="ui">' + sl.ui(r) + '</div><div class="fore">' + foreground(P.biome, seed) + '</div></div><figcaption>' + label + "</figcaption></figure>";
+    host.innerHTML = P.map(function (sl, i) {
+      var cap = sl[1].replace(/<[^>]+>/g, ""), label = (sl[1].match(/<b>(.*?):?<\/b>/) || ["", ""])[1].toLowerCase();
+      return '<figure class="jn-shot" style="--i:' + i + '" title="' + cap + '">' + (i ? '<i class="jn-tape jn-t4"></i>' : '<i class="jn-tape jn-t1"></i><i class="jn-tape jn-t2"></i>') +
+        '<div class="frame"><img src="assets/projects/' + sl[0] + '.webp" alt="' + cap + '" width="1440" height="900" loading="lazy" decoding="async" /></div><figcaption>' + label + "</figcaption></figure>";
     }).join("");
     $$(".jn-shot", host).forEach(function (shot) {
       shot.tabIndex = 0;
@@ -1166,16 +940,6 @@
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(size);
     bind();
   })();
-
-  // parks / ui focus
-  var work = $("#work"), toggle = $(".view-toggle");
-  $$("[data-view]", toggle).forEach(function (b) {
-    b.addEventListener("click", function () {
-      var ui = b.getAttribute("data-view") === "ui";
-      work.classList.toggle("ui-focus", ui);
-      $$("[data-view]", toggle).forEach(function (o) { var on = o === b; o.classList.toggle("on", on); o.setAttribute("aria-pressed", String(on)); });
-    });
-  });
 
   /* ── experience topo map ───────────────────────────────── */
   var topo = $("#experience"), topoHost = $("[data-topo]"), trailHost = $("[data-trail]");
@@ -1954,11 +1718,6 @@
         var d = parseFloat(l.getAttribute("data-depth"));
         l.style.transform = "translate3d(" + f(-mouse.x * d * 26) + "px," + f(y * (1 - d) * 0.45 - mouse.y * d * 10) + "px,0)";
       });
-    }
-    // parks toggle only while the work section is on screen
-    if (work && toggle) {
-      var wr = work.getBoundingClientRect();
-      toggle.classList.toggle("show", wr.top < vh * 0.5 && wr.bottom > vh * 0.5);
     }
     updateSigns();
     updateBar();

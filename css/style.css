@@ -36,7 +36,7 @@
   --fiber: #1e261b;
 }
 /* things printed on paper keep daylight ink, whatever the hour */
-.jn-stage, .stops > li, .view-toggle, .field-notes, .rc {
+.jn-stage, .stops > li, .field-notes, .rc {
   --ink: #232b1c; --ink-2: #3b3a2e; --rust: #a8481f; --cream: #f9f6ea; --paper: #fbf8ee;
 }
 
@@ -580,7 +580,6 @@ html:not(.js) .fog { display: none; }
 .jn-shot:nth-child(1) { grid-column: 1 / -1; justify-self: start; width: 84%; margin-left: 1%; --r: -1.2deg; }
 .jn-shot:nth-child(2) { --r: 2deg; } .jn-shot:nth-child(3) { --r: -2.4deg; margin-top: 8px; }
 .jn-shot:hover { z-index: 2; transform: rotate(0deg) scale(1.03); box-shadow: 0 1px 2px rgba(0, 0, 0, .15), 0 20px 28px -12px rgba(0, 0, 0, .4); }
-.jn-shot:hover .scene { transform: scale(1.04); }
 .jn-shot figcaption { position: absolute; left: 0; right: 0; bottom: 2px; text-align: center; font: 400 12.2px var(--hand); color: var(--jn-ink); }
 .jn-tape { position: absolute; z-index: 3; width: 84px; height: 24px; background: repeating-linear-gradient(45deg, rgba(255, 255, 255, .22) 0 6px, transparent 6px 12px), rgba(214, 196, 150, .72);
   clip-path: polygon(0 8%, 6% 0, 12% 10%, 18% 0, 82% 2%, 88% 0, 94% 12%, 100% 4%, 100% 92%, 94% 100%, 88% 90%, 82% 100%, 18% 98%, 12% 100%, 6% 88%, 0 96%); }
@@ -600,19 +599,7 @@ html:not(.js) .fog { display: none; }
 .jn-photo-viewer.is-visible::backdrop { opacity: 1; }
 .jn-photo-viewer-body { width: 100%; }
 .jn-photo-viewer .jn-shot, .jn-photo-viewer .jn-shot:hover { width: 100%; margin: 0; padding: 8px 8px 34px; transform: none; box-shadow: none; transition: none; cursor: zoom-out; }
-.jn-photo-viewer .jn-shot:hover .scene { transform: none; }
-/* photos follow the cursor: scenery, screen and foreground drift at different depths (--mx/--my set in js) */
-.jn-shot .scene, .jn-shot .ui, .jn-shot .fore { translate: 0 0; }
-.jn-shot.tracking .scene, .jn-shot.tracking .ui, .jn-shot.tracking .fore { transition: translate .18s ease-out, opacity .6s var(--ease), transform 1.2s var(--ease), left .6s var(--ease), right .6s var(--ease), top .6s var(--ease), bottom .6s var(--ease); }
-.jn-shot.tracking .scene { translate: calc(var(--mx, 0) * -8px) calc(var(--my, 0) * -6px); }
-.jn-shot.tracking .ui { translate: calc(var(--mx, 0) * 3px) calc(var(--my, 0) * 2px); }
-.jn-shot.tracking .fore { translate: calc(var(--mx, 0) * 12px) 0; }
 .jn-photo-viewer .frame { transform: perspective(1400px) rotateY(calc(var(--mx, 0) * 7deg)) rotateX(calc(var(--my, 0) * -6deg)); transition: transform .25s ease-out; }
-.jn-photo-viewer .jn-shot .scene, .jn-photo-viewer .jn-shot:hover .scene { transform: scale(1.08); }
-.jn-photo-viewer .jn-shot .fore { bottom: -10px; transform: scale(1.06); transform-origin: 50% 100%; }
-.jn-photo-viewer .jn-shot.tracking .scene { translate: calc(var(--mx, 0) * -28px) calc(var(--my, 0) * -18px); }
-.jn-photo-viewer .jn-shot.tracking .ui { translate: calc(var(--mx, 0) * 10px) calc(var(--my, 0) * 6px); }
-.jn-photo-viewer .jn-shot.tracking .fore { translate: calc(var(--mx, 0) * 40px) calc(var(--my, 0) * 8px); }
 .jn-photo-viewer .jn-shot figcaption { font-size: clamp(17px, 2vw, 23px); }
 .jn-photo-close { position: absolute; z-index: 5; top: 18px; right: 18px; display: grid; place-items: center; width: 44px; height: 44px;
   border-radius: 50%; background: #f7f0dc; color: #253049; box-shadow: 0 2px 12px rgba(0, 0, 0, .3); font: 700 30px/1 var(--sans); }
@@ -670,75 +657,9 @@ html:not(.js) .jn-controls, html:not(.js) .jn-tabs { display: none; }
 @media (prefers-reduced-motion: reduce) { .jn-leaf { transition: none !important; animation: none !important; } .jn-ribbon.sway *, .jn-pencil.nudge { animation: none !important; } .jn-photo-viewer .frame { transform: none; } }
 
 .frame { position: relative; aspect-ratio: 16 / 10; overflow: hidden; background: var(--cream-2); container-type: inline-size; }
-.scene, .fore { position: absolute; inset: 0; transition: opacity .6s var(--ease), transform 1.2s var(--ease); }
-.scene svg, .fore svg { width: 100%; height: 100%; }
-.fore { top: auto; height: 46%; pointer-events: none; }
-.ui {
-  position: absolute; left: 12%; right: 12%; top: 11%; bottom: 8%;
-  background: #fff; border-radius: 1.2cqw;
-  box-shadow: 0 .6cqw 2.4cqw rgba(30, 30, 20, .28);
-  overflow: hidden;
-  font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  font-size: 1.6cqw; line-height: 1.35; color: #1f2328;
-  transition: transform .6s var(--ease), left .6s var(--ease), right .6s var(--ease), top .6s var(--ease), bottom .6s var(--ease);
-}
-.work.ui-focus .scene, .work.ui-focus .fore { opacity: 0; }
-.work.ui-focus .ui { left: 6%; right: 6%; top: 6%; bottom: 6%; }
-
-/* ui mock parts */
-.ui .bar { display: flex; align-items: center; gap: .6em; padding: .7em 1em; border-bottom: 1px solid #eceae4; font-weight: 600; }
-.ui .bar i { width: .7em; height: .7em; border-radius: 50%; background: #e4e1d8; display: inline-block; }
-.ui .bar i:nth-child(1) { background: #ef6a5b; } .ui .bar i:nth-child(2) { background: #f3c14b; } .ui .bar i:nth-child(3) { background: #62c16b; }
-.ui .bar span { margin-left: .6em; } .ui .bar em { margin-left: auto; font-style: normal; font-weight: 500; color: #8a8f98; font-size: .85em; }
-.ui .pad { padding: 1em 1.2em; }
-.ui .muted { color: #8a8f98; }
-.ui .h { font-weight: 700; font-size: 1.25em; }
-.ui .chip { display: inline-block; padding: .15em .6em; border-radius: 99px; font-size: .78em; font-weight: 600; background: #eef2f7; color: #43506a; }
-.ui .chip.g { background: #e5f5e7; color: #2f7a3a; } .ui .chip.o { background: #fde9d9; color: #a8481f; } .ui .chip.b { background: #e3eefc; color: #2c5fa8; } .ui .chip.p { background: #efe6fb; color: #6a3fb0; }
-.ui .line { height: .55em; border-radius: 4px; background: #eceae4; margin: .45em 0; }
-.ui .row { display: flex; align-items: center; gap: .8em; padding: .55em 0; border-bottom: 1px solid #f1efe9; }
-.ui .row:last-child { border-bottom: 0; }
-.ui .meter { flex: 0 0 22%; height: .5em; border-radius: 4px; background: #eceae4; overflow: hidden; }
-.ui .meter b { display: block; height: 100%; background: #3f7d4e; border-radius: 4px; }
-.ui .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1em; }
-.ui .card { border: 1px solid #eceae4; border-radius: .6em; padding: .8em; }
-.ui svg { width: 100%; height: auto; }
-.ui .kpi { font-size: 2.2em; font-weight: 800; letter-spacing: -.02em; }
-.ui .side { position: absolute; left: 0; top: 2.4em; bottom: 0; width: 24%; border-right: 1px solid #eceae4; padding: 1em; }
-.ui .main { position: absolute; left: 24%; right: 0; top: 2.4em; bottom: 0; padding: 1em; }
-.ui .cm { display: grid; grid-template-columns: auto 1fr 1fr; gap: .4em; align-items: center; text-align: center; }
-.ui .cm div { padding: 1.4em .4em; border-radius: .4em; font-weight: 700; }
-.ui .flow { display: flex; align-items: center; justify-content: center; gap: .5em; flex-wrap: wrap; padding: 1.4em 1em; }
-.ui .node { padding: .7em .9em; border-radius: .5em; border: 1px solid #d9d6cc; background: #faf9f5; font-weight: 600; text-align: center; min-width: 7em; }
-.ui .node small { display: block; font-weight: 500; color: #8a8f98; font-size: .8em; }
-.ui .node.hot { background: #fff4e5; border-color: #f2c48d; }
-.ui .arrow { color: #a3a09a; font-weight: 700; }
-
-/* view toggle: a small icon switch parked on the left edge while the journal is in view */
-.view-toggle {
-  position: fixed; left: 16px; top: 50%; z-index: 65;
-  display: flex; flex-direction: column; gap: 3px; padding: 4px;
-  background: var(--paper); border: 1.5px solid var(--ink); border-radius: 999px;
-  box-shadow: 0 10px 24px -10px rgba(40, 35, 20, .5);
-  transform: translate(calc(-100% - 24px), -50%); opacity: 0;
-  transition: transform .5s var(--ease), opacity .4s;
-}
-.view-toggle.show { transform: translate(0, -50%); opacity: 1; }
-.view-toggle button { position: relative; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; color: var(--ink); transition: background-color .3s, color .3s; }
-.view-toggle button svg { width: 15px; height: 15px; }
-.view-toggle button.on { background: var(--ink); color: var(--cream); }
-.view-toggle button:not(.on):hover { background: rgba(35, 43, 28, .08); }
-/* the label pops out beside the switch on hover or focus */
-.vt-label { position: absolute; left: calc(100% + 12px); top: 50%; padding: 5px 10px 3px; border-radius: 999px; background: var(--ink); color: var(--cream); white-space: nowrap;
-  font-weight: 700; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; pointer-events: none;
-  opacity: 0; transform: translate(-4px, -50%); transition: opacity .2s, transform .25s var(--ease); }
-.view-toggle button:hover .vt-label, .view-toggle button:focus-visible .vt-label { opacity: 1; transform: translate(0, -50%); }
-@media (max-width: 760px) {
-  .view-toggle { left: 12px; top: auto; bottom: 14px; flex-direction: row; padding: 3px; transform: translateX(calc(-100% - 20px)); }
-  .view-toggle button { width: 28px; height: 28px; }
-  .vt-label { display: none; }
-  .view-toggle.show { transform: none; }
-}
+.frame img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform 1.2s var(--ease); }
+.jn-shot:hover .frame img { transform: scale(1.03); }
+.jn-photo-viewer .jn-shot:hover .frame img { transform: none; }
 
 /* ── experience topo map ──────────────────────────────────── */
 .topo {
@@ -1134,7 +1055,7 @@ html:not(.js) .camp, .camps.in .camp { transform: none; opacity: 1; }
 
 /* ── book a call: the postcard lake behind a paper booking card ── */
 .book { position: relative; overflow: hidden; padding: 140px clamp(20px, 5vw, 80px) 150px; isolation: isolate; }
-.book-bg { position: absolute; inset: 0; z-index: -2; background: url("assets/book-lake.webp") center 40% / cover no-repeat; transform: scale(1.04); filter: saturate(1.05); transition: filter 1.4s var(--ease); }
+.book-bg { position: absolute; inset: 0; z-index: -2; background: url("../assets/photos/book-lake.webp") center 40% / cover no-repeat; transform: scale(1.04); filter: saturate(1.05); transition: filter 1.4s var(--ease); }
 .book::before { content: ""; position: absolute; inset: 0; z-index: -1;
   background: linear-gradient(90deg, rgba(16, 26, 20, .72) 0%, rgba(16, 26, 20, .42) 45%, rgba(16, 26, 20, .12) 100%); }
 :root[data-theme="night"] .book-bg { filter: brightness(.42) saturate(.7) hue-rotate(10deg); }
