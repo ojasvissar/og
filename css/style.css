@@ -1868,3 +1868,188 @@ html.intro-on .pill, html.intro-on .pill *, html.intro-on .brand-mark, html.intr
 .rt-now a:hover { color: var(--gold); border-color: var(--gold); }
 .rt-meta { margin-top: 12px; }
 .rt-sub { margin-top: 16px; }
+
+/* ══ phones: the same trail, packed lighter ══════════════════════════════════════════
+   One place for the small-screen pass: tighter section rhythm, shorter art, no duplicated
+   content, and the map labels that crowd a narrow screen tucked away. */
+.book-call { display: none; }
+@media (max-width: 860px) {
+  /* experience: the map's place names collide with the title and cards on a narrow map */
+  .topo-map svg { display: none; }
+  .topo-title { padding-top: 84px; }
+  .trail { padding-top: 34px; }
+  .topo { padding-bottom: 64px; }
+}
+@media (max-width: 960px) {
+  /* toolkit: heading first, then the rings, then the legend */
+  .rings-grid { gap: 0; }
+  .rings-copy { display: contents; }
+  .rings-copy h2 { justify-self: start; }
+  .slice-wrap { order: 1; width: 100%; max-width: 340px; margin: 10px auto 0; }
+  .zones { order: 2; }
+}
+@media (max-width: 600px) {
+  body { font-size: 16px; line-height: 1.6; }
+
+  /* trusted strip */
+  .trusted { padding-top: calc(34px + var(--tear-h)); }
+  .co-marquee { margin-top: 12px; }
+  .co-row { gap: 44px; }
+  .co-row a, .co-row li > span { height: 44px; transform: scale(.82); }
+
+  /* about */
+  .about { padding: 34px 20px 64px; }
+  .about-grid { gap: 30px; }
+  .hw { margin: 10px 0 6px; min-height: 0; }
+  .about-title { font-size: 28px; }
+  .about-copy > p:not(.caps) { margin-top: 12px; font-size: 15.5px; line-height: 1.6; }
+  .about-copy > .about-extra { display: none; }
+  .principles { margin-top: 16px; }
+  .principles li { grid-template-columns: 34px 1fr; padding: 5px 0; }
+  .principles li:nth-child(3) { display: none; }   /* "30+ projects" is already in the copy and on the card */
+  .principles span { font-size: 16px; }
+  .pass { max-width: 360px; }
+  .wpa-art { aspect-ratio: 900 / 640; }
+  .wpa-head { padding-top: 16px; }
+  .pass-name { font-size: 32px; }
+  .wpa-info { padding-top: 16px; }
+  .wpa-info > div { padding: 5px 0 4px; }
+
+  /* services */
+  .services { padding: 64px 16px 52px; }
+  .svc-sub { font-size: 14px; line-height: 1.55; }
+  .trailhead { margin-top: 22px; gap: 22px; }
+  .sp { padding-bottom: 20px; max-width: 360px; }
+  .sp-cap { display: none; }
+  .sp-boards { gap: 6px; }
+  .sp-post { top: 0; }
+  .sp-board { padding: 8px 34px 7px 16px; gap: 10px; grid-template-columns: 18px 1fr auto; }
+  .sp-boards li:nth-child(even) .sp-board { padding: 8px 16px 7px 34px; }
+  .sp-board span { font-size: 14.5px; }
+  .sp-blaze { width: 15px; height: 15px; }
+  .sp-board.on { transform: rotate(0deg) translateX(calc(var(--dir) * 8px)); }
+  .rc-body { padding: 18px 16px 20px; }
+  .rc-top { padding-bottom: 14px; }
+  .rc-tag { font-size: 14px; }
+  .rc-viz { margin-top: 16px; }
+  .rc-viz figcaption { min-height: 0; font-size: 13px; }
+  .sv-heading > span { display: none; }   /* "illustration · hover the curve": there's no hover on a phone */
+  .sv-legend { margin-top: 6px; gap: 4px 12px; font-size: 11px; }
+  .rc-side { gap: 12px; }
+  .rc-meta { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .rc-meta dd { font-size: 13px; }
+  .rc-get li { font-size: 13.5px; }
+  .rc-cta { align-self: stretch; justify-content: center; margin-top: 4px; }
+  .camps-trail { margin-top: 26px; padding-top: 14px; gap: 12px; }
+  .ct { row-gap: 14px; gap: 10px; }
+  .ct li { grid-template-columns: 30px 1fr; column-gap: 8px; }
+  .cp-tent { width: 30px; height: 30px; }
+  .cp-tent svg { width: 16px; height: 12px; }
+  .ct strong { font-size: 15px; }
+  .ct .cp-text { font-size: 12px; line-height: 1.35; }
+
+  /* projects */
+  .work { padding-top: 100px; padding-bottom: 84px; }
+  .jn-tabs { margin-top: 24px; }
+  .jn-tabs button { min-height: 34px; padding: 4px 11px 2px; font-size: .9rem; }
+  .jn-shots { padding-bottom: 56px; }
+  .jn-controls { margin-top: 18px; }
+
+  /* reviews */
+  .register { padding-top: calc(48px + var(--tear-h)); padding-bottom: calc(var(--tear-h) + 48px); }
+  .reg-sub { font-size: 14.5px; line-height: 1.55; }
+  .reg-rows { margin-top: 26px !important; }
+  .reg-slip { width: 300px; padding: 16px 18px; }
+  .reg-q { min-height: 0; font-size: 14px; line-height: 25px; }
+  .reg-name { font-size: 21px; }
+
+  /* experience */
+  .topo-title h2 { font-size: 21px; letter-spacing: .2em; }
+  .topo-title .topo-hint { font-size: 17px; }
+  .stops { gap: 12px; }
+  .stops > li { padding: 12px 14px 13px; }
+
+  /* toolkit */
+  .rings { padding: 84px 20px 70px; }
+  .rings-sub { font-size: 14px; }
+  .zones { margin-top: 14px; }
+  .zone-head { grid-template-columns: 12px 1fr auto; gap: 10px; padding: 8px 0 6px; }
+  .zone-ring { display: none; }
+  .zone-tools { padding: 0 0 9px 22px; gap: 4px; }
+  .zone-tools button { padding: 2px 8px 1px; font-size: 11px; }
+
+  /* education */
+  .camps { padding: 18px 16px 64px; }
+  .camps-sub { font-size: 14.5px; line-height: 1.55; }
+  .camps-row { margin-top: 22px; }
+  .camp-art, .camps:has(.camp-more[open]) .camp-art { height: 96px; }
+  .camp-band { padding: 9px 16px 7px; font-size: 9.5px; }
+  .camp-body { padding: 14px 18px 16px; }
+  .camp-body h3 { margin-top: 8px; font-size: 22px; }
+  .camp-school { margin-top: 10px; font-size: 13px; }
+  .camp-text { font-size: 14.5px; line-height: 1.55; }
+  .camp-more { margin-top: 12px; }
+  .camp-more > summary { padding: 9px 2px 8px; }
+  .camp-route { height: 54px; }
+  .camp-route svg { width: 44px; height: 26px; }
+
+  /* publications: the reprint already shows the title, so the info column drops its copy of it */
+  .writing { padding-top: calc(var(--tear-h) + 28px); padding-bottom: calc(var(--tear-h) + 28px); }
+  .paper { margin-top: 18px; gap: 34px; }
+  .reprint { max-width: 290px; }
+  .rp-page { gap: 7px; }
+  .rp-title { font-size: 15px; }
+  .rp-authors { font-size: 11px; }
+  .rp-abs { font-size: 10.5px; line-height: 1.5; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 5; overflow: hidden; }
+  .rp-lines { display: none; }
+  .writing .seal { width: 70px; height: 70px; }
+  .pi-title { display: none; }
+  .pi-kicker { line-height: 1.6; letter-spacing: .16em; }
+  .pi-text { margin-top: 10px; font-size: 15px; line-height: 1.6; }
+  .pi-facts { margin-top: 14px; padding: 10px 0; gap: 8px 18px; }
+  .pi-facts dd { font-size: 15px; }
+  .paper-info .wr-actions { padding-top: 16px; }
+  .wr-btn { padding: 9px 13px 7px; }
+  .to-blog { margin-top: 24px; padding: 14px 16px; gap: 4px 12px; }
+  .to-blog strong { font-size: 18px; }
+  .tb-text { font-size: 13.5px; }
+
+  /* contact: a booking link stands in for the inline calendar */
+  .book { padding: 84px 14px 76px; }
+  .book-head { margin-bottom: 26px; }
+  .book-grid { gap: 18px; }
+  .postcard { padding: 20px 18px 16px; }
+  .pc-top { min-height: 96px; }
+  .pc-note { font-size: 15px; }
+  .pc-sign { font-size: 24px; margin-top: 0; }
+  .pc-lines a { padding: 9px 2px 7px; }
+  .cal-inline { display: none; }
+  .book-card { filter: none; }
+  .book-call { display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 12px; max-width: 520px; margin: 0 auto; padding: 14px 16px; border-radius: 8px;
+    background: #d9a932; color: #1d2619; box-shadow: 0 4px 0 #8a6512, 0 22px 30px -18px rgba(0, 0, 0, .6); transition: transform .2s var(--ease), box-shadow .2s; }
+  .book-call:active { transform: translateY(3px); box-shadow: 0 1px 0 #8a6512; }
+  .bc-ico { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: #1d2619; color: #d9a932; }
+  .bc-ico svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .bc-txt b { display: block; font: 700 17px/1.2 "Zilla Slab", serif; }
+  .bc-txt small { display: block; margin-top: 2px; font-size: 12px; font-weight: 600; letter-spacing: .02em; opacity: .75; }
+  .bc-go { font-size: 22px; }
+
+  /* footer: the waypoints become a tidy list of jump links (the mountain is too narrow for eight labels) */
+  .rt-wrap { gap: 18px; padding: calc(var(--tear-h) + 18px) 20px 0; }
+  .rt-meta { font-size: 14px; }
+  .rt-now { margin-top: 14px; }
+  .rt-now div { grid-template-columns: 96px 1fr; gap: 10px; padding: 7px 0 6px; }
+  .rt-now dd { font-size: 13.5px; }
+  .rt-sub { display: none; }
+  .rt-stage { aspect-ratio: auto; margin: 0; }
+  .rt-art { display: none; }
+  .rt-pins { position: static; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .rt-pins::before { content: "Jump back to"; grid-column: 1 / -1; font: 700 9.5px var(--sans); letter-spacing: .2em; text-transform: uppercase; color: var(--gold); }
+  .rt-pin { position: static; width: auto; height: auto; display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 999px; background: rgba(239, 230, 204, .06); border: 1px solid rgba(239, 230, 204, .14); }
+  .rt-pin::before { display: none; }
+  .rt-head { position: static; flex: none; width: 26px; height: 26px; margin: 0; box-shadow: none; }
+  .rt-head svg { width: 14px; height: 14px; }
+  .rt-lab, .rt-side-r .rt-lab, .rt-side-l .rt-lab { position: static; transform: none; padding: 0; background: none; font-size: 10px; letter-spacing: .1em; white-space: normal; line-height: 1.2; }
+  .js .rt-pin { translate: 0 8px; }
+  .rt-bottom { padding: 14px 20px 22px; gap: 8px; }
+}

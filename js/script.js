@@ -200,8 +200,11 @@
     if (!host) return;
     var loaded = false, NS = "30min";
     var theme = function () { return "dark"; };   // the calendar stays dark against the postcard, whatever the hour
+    // phones get a plain "book a call" link instead (.book-call), so the heavy frame is never fetched there
+    var phone = window.matchMedia("(max-width: 600px)");
+    if (phone.addEventListener) phone.addEventListener("change", function () { if (!phone.matches) load(); });
     function load() {
-      if (loaded) return; loaded = true;
+      if (loaded || phone.matches) return; loaded = true;
       (function (C, A, L) { var p = function (a, ar) { a.q.push(ar); }; var d = C.document;
         C.Cal = C.Cal || function () { var cal = C.Cal, ar = arguments;
           if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement("script")).src = A; cal.loaded = true; }
