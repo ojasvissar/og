@@ -1325,16 +1325,11 @@
     } else play();
   })();
 
-  /* ── annual trail pass: survey contours, a quiet sheen, and the original park emblem ── */
+  /* ── about card: a 1930s park-service poster that tilts, catches the light, and whose print shifts under the cursor ── */
   (function () {
-    var pass = $(".pass"), card = $("[data-pass]"), canvas = $("[data-pass-topo]");
-    if (!pass || !card || !canvas) return;
-    var timer, frame = 0, x = .5, y = .5;
-    function paint() { if (card.offsetWidth) paintContours(canvas, card, "--pass-ink", 6.1, 3.3); }
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(paint); else paint();
-    window.addEventListener("resize", function () { clearTimeout(timer); timer = setTimeout(paint, 200); });
-    new MutationObserver(paint).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    if (reduceMotion || !canHover) return;
+    var pass = $(".pass"), card = $("[data-pass]");
+    if (!pass || !card || reduceMotion || !canHover) return;
+    var frame = 0, x = .5, y = .5;
     pass.addEventListener("pointermove", function (event) {
       if (event.pointerType === "touch") return;
       var bounds = pass.getBoundingClientRect();
@@ -1348,7 +1343,7 @@
     });
     function reset() {
       cancelAnimationFrame(frame); frame = 0; card.classList.remove("tracking");
-      ["--rx", "--ry"].forEach(function (key) { card.style.removeProperty(key); });
+      ["--rx", "--ry", "--mx", "--my"].forEach(function (key) { card.style.removeProperty(key); });   // the layers glide back
     }
     pass.addEventListener("pointerleave", reset); pass.addEventListener("pointercancel", reset);
   })();
@@ -1422,6 +1417,82 @@
       if (!template) return;
       visual.replaceChildren(template.content.cloneNode(true));
       caption.textContent = template.getAttribute("data-caption");
+      interact(visual);
+    }
+    // each diagram answers a hover, a tap or keyboard focus with something true about it
+    function interact(root) {
+      var tip = $("[data-tip]", root);
+      var show = function (html, x, y, box) {
+        if (!tip) return;
+        tip.innerHTML = html; tip.hidden = false;
+        var w = tip.offsetWidth, bw = box.width;
+        tip.style.left = clamp(x - w / 2, 0, bw - w) + "px"; tip.style.top = Math.max(0, y - tip.offsetHeight - 10) + "px";
+      };
+      var hide = function () { if (tip) tip.hidden = true; };
+      // pair things up: hovering either side of a data-* link lights up both
+      function pairs(attr, cls) {
+        var els = $$("[" + attr + "]", root);
+        var on = function (v) { els.forEach(function (e) { e.classList.toggle(cls, v !== null && e.getAttribute(attr) === v); }); root.firstElementChild.classList.toggle("sv-focus", v !== null); };
+        els.forEach(function (e) {
+          var v = e.getAttribute(attr);
+          e.addEventListener("pointerenter", function () { on(v); });
+          e.addEventListener("pointerleave", function (ev) { if (ev.pointerType !== "touch") on(null); });
+          e.addEventListener("focus", function () { on(v); });
+          e.addEventListener("blur", function () { on(null); });
+          e.addEventListener("click", function () { on(v); });
+        });
+      }
+      pairs("data-cite", "sv-lit");
+      pairs("data-ent", "sv-lit");
+      pairs("data-src", "sv-lit");
+      // the learning curve: a crosshair that reads out the epoch under the pointer
+      var lc = $("[data-lc]", root);
+      if (lc) {
+        var D = JSON.parse(lc.getAttribute("data-lc")), hit = $("[data-lc-hit]", lc), cross = $("[data-cross]", lc);
+        var X = function (e) { return D.x0 + (D.x1 - D.x0) * e / 30; }, Y = function (v) { return D.y1 - (D.y1 - D.y0) * v; };
+        var read = function (ev) {
+          var m = lc.getScreenCTM(); if (!m) return;
+          var pt = lc.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY; pt = pt.matrixTransform(m.inverse());
+          var e = Math.round(clamp((pt.x - D.x0) / (D.x1 - D.x0) * 30, 0, 30));
+          cross.setAttribute("transform", "translate(" + f(X(e)) + " 0)");
+          $(".sv-cross-t", cross).setAttribute("cy", f(Y(D.train[e]))); $(".sv-cross-v", cross).setAttribute("cy", f(Y(D.val[e])));
+          cross.classList.add("on");
+          var box = lc.parentNode.getBoundingClientRect(), r = lc.getBoundingClientRect(), k = r.width / 360;
+          show("<b>Epoch " + e + (e === D.best ? " · kept" : "") + "</b><span><i class=\"t\"></i>train " + D.train[e].toFixed(2) + "</span><span><i class=\"v\"></i>validation " + D.val[e].toFixed(2) + "</span>" +
+            (e > D.best ? "<em>overfitting: validation is rising</em>" : ""), r.left - box.left + X(e) * k, r.top - box.top + Y(Math.max(D.train[e], D.val[e])) * k, box);
+        };
+        hit.addEventListener("pointermove", read); hit.addEventListener("pointerdown", read); hit.addEventListener("click", read);
+        // a finger lifting counts as leaving; on touch the readout stays until the next tap
+        hit.addEventListener("pointerleave", function (ev) { if (ev.pointerType === "touch") return; cross.classList.remove("on"); hide(); });
+      }
+      // the forest plot: a row reads out its estimate and interval
+      var rows = $$(".sv-rowhit [data-row]", root);
+      if (rows.length) {
+        var NOTE = [["Study 1", "0.12", "−0.14 to 0.38", "crosses zero: not conclusive on its own"], ["Study 2", "0.31", "0.12 to 0.50", "clears zero"], ["Pooled", "0.24", "0.09 to 0.39", "both studies combined: clears zero"]];
+        var all = $$("[data-row]", root);
+        rows.forEach(function (r) {
+          var k = +r.getAttribute("data-row"), svgEl = r.ownerSVGElement;
+          var enter = function () {
+            all.forEach(function (e) { e.classList.toggle("sv-lit", e.getAttribute("data-row") === String(k)); });
+            root.firstElementChild.classList.add("sv-focus");
+            var box = svgEl.parentNode.getBoundingClientRect(), rb = r.getBoundingClientRect(), n = NOTE[k];
+            show("<b>" + n[0] + "</b><span>estimate " + n[1] + "</span><span>95% CI " + n[2] + "</span><em>" + n[3] + "</em>", rb.left - box.left + rb.width * .38, rb.top - box.top, box);
+          };
+          r.addEventListener("pointerenter", enter); r.addEventListener("click", enter);
+          r.addEventListener("pointerleave", function (ev) { if (ev.pointerType === "touch") return; all.forEach(function (e) { e.classList.remove("sv-lit"); }); root.firstElementChild.classList.remove("sv-focus"); hide(); });
+        });
+      }
+      // the pipeline: run a fresh batch through, and count the checks as they pass
+      var run = $("[data-run]", root), checks = $("[data-checks]", root);
+      if (run && checks) run.addEventListener("click", function () {
+        var panel = root.firstElementChild, n = 0;
+        panel.classList.remove("sv-running"); void panel.offsetWidth; panel.classList.add("sv-running");
+        run.disabled = true;
+        (function tick() {
+          checks.textContent = "checks " + n + "/12";
+          if (n++ < 12) setTimeout(tick, 110); else { run.disabled = false; setTimeout(function () { panel.classList.remove("sv-running"); }, 600); }
+        })();
+      });
     }
     function fill(i) {
       var R = ROUTES[i];
@@ -1715,7 +1786,9 @@
     // fine growth rings across the wood, then the zone boundaries on top
     var lines = "";
     for (var R = 6; R < 254; R += 3.4 + ((R * 7) % 5) * 0.55) lines += '<path class="ringline" d="' + ringPath(R) + '"/>';
-    s += '<g class="grow" style="--gd:.2s" clip-path="url(#slice-clip)">' + lines + '<rect width="600" height="600" filter="url(#woodgrain)"/></g>';
+    // the wood grain is an SVG turbulence filter: far too heavy to redraw on every frame of the grow, so it
+    // stays out of the animation and settles in once the rings are up
+    s += '<g class="grow" style="--gd:.2s" clip-path="url(#slice-clip)">' + lines + '</g><g class="grain" clip-path="url(#slice-clip)"><rect width="600" height="600" filter="url(#woodgrain)"/></g>';
     // drying cracks, like a real cut log
     [[0.3, 150, 268], [2.5, 190, 272], [4.1, 120, 262]].forEach(function (c) {
       var x1 = C + Math.cos(c[0]) * c[1], y1 = C + Math.sin(c[0]) * c[1], x2 = C + Math.cos(c[0] + 0.03) * c[2], y2 = C + Math.sin(c[0] + 0.03) * c[2];
@@ -1786,9 +1859,13 @@
     sliceHost.addEventListener("mouseleave", function () { focusZone(null); showTool(null); });
 
     if ("IntersectionObserver" in window && !reduceMotion) {
-      var rio = new IntersectionObserver(function (es) { if (es[0].isIntersecting) { ringsEl.classList.add("in"); rio.disconnect(); } }, { threshold: 0.25 });
+      var rio = new IntersectionObserver(function (es) {
+        if (!es[0].isIntersecting) return;
+        ringsEl.classList.add("in"); rio.disconnect();
+        setTimeout(function () { ringsEl.classList.add("grained"); }, reduceMotion ? 0 : 1900);
+      }, { threshold: 0.25 });
       rio.observe(ringsEl);
-    } else ringsEl.classList.add("in");
+    } else ringsEl.classList.add("in", "grained");
   }
 
   /* ── signpost: live distances to each stop ─────────────── */
