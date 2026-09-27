@@ -1215,24 +1215,27 @@
     try { el.focus({ preventScroll: true }); } catch (err) {}
   });
 
-  /* ── about: type the hello world when it comes into view ── */
+  /* ── about: type the hello world softly when it comes into view, then pencil in its output ── */
   (function () {
-    var pre = $("[data-hello-code]"); if (!pre || reduceMotion) return;
-    var code = $("code", pre), html = code.innerHTML, out = $(".hc-out", code), outText = out.textContent;
-    var first = html.slice(0, html.indexOf('\n'));
-    var tmp = document.createElement("div"); tmp.innerHTML = first; var cmd = tmp.textContent;
-    code.innerHTML = '<span data-typed></span><i class="tc"></i>';
-    var typed = $("[data-typed]", code);
+    var hw = $("[data-hw]"); if (!hw || reduceMotion) return;
+    (function wrap(node) {
+      Array.prototype.slice.call(node.childNodes).forEach(function (c) {
+        if (c.nodeType !== 3) return wrap(c);
+        var f = document.createDocumentFragment();
+        c.textContent.split("").forEach(function (ch) { var s = document.createElement("span"); s.className = "ch"; s.textContent = ch; f.appendChild(s); });
+        c.parentNode.replaceChild(f, c);
+      });
+    })($("[data-hw-src]", hw));
+    var chars = $$(".ch", hw);
     var go = function () {
-      var i = 0;
-      (function type() {
-        i++; tmp.textContent = cmd.slice(0, i);
-        typed.innerHTML = tmp.innerHTML.replace(/^&gt;&gt;&gt;/, '<span class="hc-p">&gt;&gt;&gt;</span>').replace(/print/, '<span class="hc-f">print</span>').replace(/("[^"]*"?)/, '<span class="hc-s">$1</span>');
-        if (i < cmd.length) setTimeout(type, 45 + Math.random() * 40);
-        else setTimeout(function () { code.innerHTML = html.replace('</code>', ''); code.insertAdjacentHTML("beforeend", '<i class="tc"></i>'); }, 380);
-      })();
+      var t = 0;
+      chars.forEach(function (c, i) {
+        t += i < 4 ? 20 : 34 + Math.random() * 30;
+        setTimeout(function () { c.classList.add("on"); }, t);
+      });
+      setTimeout(function () { hw.classList.add("done"); }, t + 350);
     };
-    if ("IntersectionObserver" in window) new IntersectionObserver(function (es, io) { if (es[0].isIntersecting) { io.disconnect(); setTimeout(go, 350); } }, { threshold: .6 }).observe(pre);
+    if ("IntersectionObserver" in window) new IntersectionObserver(function (es, io) { if (es[0].isIntersecting) { io.disconnect(); setTimeout(go, 250); } }, { threshold: .8 }).observe(hw);
     else go();
   })();
 
@@ -1269,14 +1272,33 @@
     window.addEventListener("resize", function () { clearTimeout(t); t = setTimeout(paint, 200); });
   })();
 
+  /* ── about: the trail pass. contours in the Experience palette, a tilt with a soft glare, stats that count up ── */
   (function () {
-    var card = $("[data-tilt]");
-    if (!card || !canHover || reduceMotion) return;
+    var pass = $(".pass"), card = $("[data-pass]"), cv = $("[data-pass-topo]");
+    if (!pass || !card) return;
+    var paint = function () { if (card.offsetWidth) paintContours(cv, card, "--pass-ink", 6.1, 3.3); }, t;
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(paint); else paint();
+    window.addEventListener("resize", function () { clearTimeout(t); t = setTimeout(paint, 200); });
+    new MutationObserver(paint).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    if (reduceMotion) return;
+    var counted = false;
+    new MutationObserver(function () {
+      if (counted || !pass.classList.contains("in")) return; counted = true;
+      $$("[data-count]", pass).forEach(function (el, i) {
+        var end = +el.getAttribute("data-count"), t0 = 0;
+        setTimeout(function () {
+          (function tick(ts) { t0 = t0 || ts; var p = Math.min(1, (ts - t0) / 1100); el.textContent = Math.round(end * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(tick); })(performance.now());
+        }, 900 + i * 120);
+      });
+    }).observe(pass, { attributes: true, attributeFilter: ["class"] });
+    if (!canHover) return;
     card.addEventListener("pointermove", function (e) {
-      var r = card.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
-      card.style.transform = "rotate(0deg) perspective(900px) rotateY(" + f(x * 8) + "deg) rotateX(" + f(-y * 6) + "deg)";
+      var r = card.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+      card.classList.add("tracking");
+      card.style.setProperty("--ry", f((x - .5) * 10) + "deg"); card.style.setProperty("--rx", f((.5 - y) * 7) + "deg");
+      card.style.setProperty("--mx", f(x * 100) / 100); card.style.setProperty("--my", f(y * 100) / 100);
     });
-    card.addEventListener("pointerleave", function () { card.style.transform = ""; });
+    card.addEventListener("pointerleave", function () { card.classList.remove("tracking"); ["--rx", "--ry"].forEach(function (k) { card.style.removeProperty(k); }); });
   })();
 
   /* ── cream sections: faint contours, painted only once each section nears the screen ── */
@@ -1335,7 +1357,7 @@
     function profile(i) {
       var R = ROUTES[i], r = rng(900 + i * 37), W = 640, H = 170, n = R.pts.length, pts = [], wps = [];
       var stageX = function (k) { return 36 + k * (W - 72) / (n - 1); };
-      var stageY = function (k) { return 140 - k * (100 / (n - 1)) - (k === n - 1 ? 8 : (r() - .5) * 14); };
+      var stageY = function (k) { return 152 - k * (96 / (n - 1)) - (k === n - 1 ? 8 : (r() - .5) * 14); };
       var ys = []; for (var k = 0; k < n; k++) ys.push(stageY(k));
       for (var x = 0; x <= W; x += 8) {
         var seg = Math.min(n - 2, Math.max(0, Math.floor((x - 36) / ((W - 72) / (n - 1))))), t = Math.max(0, Math.min(1, (x - stageX(seg)) / (stageX(seg + 1) - stageX(seg))));
@@ -1349,8 +1371,8 @@
         '<path class="trail" d="' + pts.map(function (p, q) { return (q ? "L" : "M") + f(p[0]) + " " + f(p[1] - 10); }).join("") + '"/>';
       for (k = 0; k < n; k++) {
         var wx = stageX(k), wy = ys[k] - 10;
-        s += '<g class="wp' + (k === n - 1 ? " end" : "") + '" style="--i:' + k + '"><line x1="' + f(wx) + '" y1="' + f(wy - 22) + '" x2="' + f(wx) + '" y2="' + f(wy - 6) + '"/><circle cx="' + f(wx) + '" cy="' + f(wy) + '" r="5.5"/></g>';
-        wps.push('<span class="wp-lb" style="--i:' + k + ";left:" + f(wx / W * 100) + "%;top:calc(12px + " + f((wy - 24) / H * 100) + '%)"><i>' + (k + 1) + "</i>" + R.pts[k] + "</span>");
+        s += '<g class="wp' + (k === n - 1 ? " end" : "") + '" style="--i:' + k + '"><line x1="' + f(wx) + '" y1="' + f(wy - 36) + '" x2="' + f(wx) + '" y2="' + f(wy - 7) + '"/><circle cx="' + f(wx) + '" cy="' + f(wy) + '" r="5.5"/></g>';
+        wps.push('<span class="wp-lb" style="--i:' + k + ";left:" + f(wx / W * 100) + "%;--y:" + f(wy - 36) + '"><i>' + (k + 1) + "</i>" + R.pts[k] + "</span>");
       }
       prof.innerHTML = s;
       $$(".wp-lb", fig).forEach(function (el) { el.remove(); });
