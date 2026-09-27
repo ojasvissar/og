@@ -137,11 +137,12 @@
     <div class="about-grid">
       <div class="about-copy" data-anim="up">
         <p class="caps about-kicker">About</p>
-        <p class="hw" data-hw aria-label="print Hello, World! prints Hello, World!">
-          <code class="hw-src" data-hw-src aria-hidden="true"><span class="hw-p">&gt;&gt;&gt;</span> <span class="hc-f">print</span>(<span class="hc-s">"Hello, World!"</span>)</code>
+        <div class="hw" data-hw role="group" aria-label="Hello, World! My name is Ojasv.">
+          <div class="hw-command" aria-hidden="true"><code class="hw-src" data-hw-src><span class="hw-p">&gt;&gt;&gt;</span> <span class="hc-f">print</span>(<span class="hc-s">"Hello, World!"</span>)</code><span class="hw-cursor"></span></div>
           <svg class="hw-arrow" viewBox="0 0 46 18" aria-hidden="true"><path pathLength="1" d="M2 11 C 14 4, 28 5, 42 9"/><path pathLength="1" d="M35 4 L 42 9 L 34 14"/></svg>
-          <span class="hw-out" aria-hidden="true">Hello, World!</span>
-        </p>
+          <div class="hw-result" aria-hidden="true"><span class="hw-out">Hello, World!</span><span class="hw-name">My name is <b>Ojasv.</b></span></div>
+          <button class="hw-replay" type="button" data-hw-replay aria-label="Replay the Hello World animation" title="Replay greeting"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 8a8 8 0 1 0 1 8M19 3v5h-5"/></svg></button>
+        </div>
         <h2 class="about-title" id="about-title">From raw data to <span class="scribble">decisions people act on<svg viewBox="0 0 300 20" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M3 13 C 60 5, 130 17, 190 9 S 270 6, 297 11"/></svg></span>.</h2>
         <p>Right now I build the AI models behind a live precision-agriculture platform, turning raw field measurements into decisions that growers act on every day.</p>
         <p>Over four years I've shipped more than 30 projects end to end: fine-tuned language models that beat research baselines, fraud and churn models running on real users, retrieval-augmented assistants, and the data pipelines underneath them all. I finished my Master of Data Science with a perfect 4.0.</p>
@@ -162,8 +163,8 @@
           <p class="pass-role">Data Scientist <i aria-hidden="true">·</i> AI/ML Engineer</p>
           <p class="pass-loc"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.2"/></svg>Vancouver, BC <span aria-hidden="true">49.28°N</span></p>
           <dl class="pass-stats">
-            <div><dt>in the field</dt><dd><b data-count="4">4</b><b>+</b> yrs</dd></div>
-            <div><dt>projects shipped</dt><dd><b data-count="30">30</b><b>+</b></dd></div>
+            <div><dt>in the field</dt><dd><b>4</b><b>+</b> yrs</dd></div>
+            <div><dt>projects shipped</dt><dd><b>30</b><b>+</b></dd></div>
             <div><dt>MDS · UBC</dt><dd><b>4.0</b> GPA</dd></div>
           </dl>
           <p class="pass-now"><span>Currently</span>Data science @ Vintality</p>
@@ -195,18 +196,138 @@
       <article class="rc" data-anim="right" id="sp-card" role="tabpanel" aria-live="polite" data-route-card>
         <header class="rc-band"><span data-rc-num>Route 01</span><span>Trail guide · services</span></header>
         <div class="rc-body">
-          <div class="rc-title"><svg class="rc-blaze" viewBox="0 0 24 24" aria-hidden="true" data-rc-blaze></svg><h3 data-rc-name></h3></div>
-          <p class="rc-tag" data-rc-tag></p>
-          <figure class="rc-prof" aria-hidden="true"><svg viewBox="0 0 640 170" preserveAspectRatio="none" data-rc-prof></svg><figcaption>route profile · the stages of the work</figcaption></figure>
-          <div class="rc-cols">
+          <div class="rc-top">
+            <div class="rc-title"><svg class="rc-blaze" viewBox="0 0 24 24" aria-hidden="true" data-rc-blaze></svg><h3 data-rc-name></h3></div>
+            <p class="rc-tag" data-rc-tag></p>
+          </div>
+          <figure class="rc-viz"><div data-rc-viz></div><figcaption data-rc-caption></figcaption></figure>
+          <div class="rc-side">
             <div><p class="rc-label">What you get</p><ul class="rc-get" data-rc-get></ul></div>
             <dl class="rc-meta"><div><dt>Stack</dt><dd data-rc-stack></dd></div><div><dt>Best for</dt><dd data-rc-best></dd></div></dl>
+            <a class="rc-cta" href="#book">Plan this route with me <span aria-hidden="true">→</span></a>
           </div>
-          <a class="rc-cta" href="#book">Plan this route with me <span aria-hidden="true">→</span></a>
         </div>
       </article>
     </div>
     <script type="application/json" data-routes>[{"name": "Machine learning models", "tag": "From messy data to a model you can trust, and a served endpoint your product can call.", "pts": ["data audit", "baseline", "model", "evaluation", "endpoint"], "get": ["A trained model and its evaluation report", "An API or batch job your team can run", "Docs on what it can and can't do"], "stack": "Python \u00b7 scikit-learn \u00b7 XGBoost \u00b7 PyTorch", "best": "Forecasting, classification, churn, fraud", "blaze": "circle"}, {"name": "LLM & RAG apps", "tag": "Assistants and search that answer from your own documents, with retrieval quality you can actually measure.", "pts": ["documents", "retrieval", "generation", "eval set", "app"], "get": ["A working chatbot or search app", "A test set that scores retrieval and answers", "A list of known failure modes"], "stack": "AWS Bedrock \u00b7 LangChain \u00b7 Claude \u00b7 Llama \u00b7 FAISS", "best": "Support bots, internal knowledge search, report drafting", "blaze": "triangle"}, {"name": "Computer vision & NLP", "tag": "Detection, classification and text models fine-tuned to your data, in English, Arabic and beyond.", "pts": ["labelled data", "fine-tune", "benchmark", "error review", "deploy"], "get": ["A fine-tuned model beating your baseline", "Benchmarks on your own test data", "An inference script or endpoint"], "stack": "YOLO \u00b7 CNNs \u00b7 BERT \u00b7 XLM-RoBERTa \u00b7 spaCy", "best": "Image QA, document tagging, multilingual sentiment", "blaze": "square"}, {"name": "Data pipelines & dashboards", "tag": "ETL that keeps running while you sleep, and the dashboards that make the numbers usable.", "pts": ["sources", "ETL", "warehouse", "metrics", "dashboard"], "get": ["Scheduled pipelines with data checks", "A clean warehouse schema", "Dashboards your team will open"], "stack": "Airflow \u00b7 PySpark \u00b7 Kafka \u00b7 Snowflake \u00b7 Power BI", "best": "Teams outgrowing spreadsheets", "blaze": "diamond"}, {"name": "Research analytics", "tag": "Statistical modelling and ML pipelines for research teams, reproducible and documented end to end.", "pts": ["question", "method", "analysis", "checks", "write-up"], "get": ["Reproducible code and environment", "A write-up of methods and results", "A walkthrough of every choice"], "stack": "R \u00b7 Python \u00b7 Bayesian stats \u00b7 Quarto", "best": "PhD and lab research, NLP and survey data", "blaze": "hexagon"}]</script>
+    <template data-service-viz="0" data-caption="Every point gets a probability, not just a label, so you can see where the model is sure and where it isn't.">
+      <div class="sv-panel sv-ml" role="img" aria-label="Illustrative classifier: two classes of samples, a decision boundary at probability 0.5, and confidence contours at 0.1, 0.3, 0.7 and 0.9. A new sample is classified as class B with probability 0.93.">
+        <div class="sv-heading"><strong>Confidence, drawn like contours</strong><span>Illustration</span></div>
+        <div class="sv-stage">
+          <svg viewBox="0 0 520 210" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+            <defs>
+              <clipPath id="sv-ml-clip"><rect x="8" y="6" width="504" height="198" rx="6"/></clipPath>
+              <linearGradient id="sv-ml-wash" x1="0" x2="1" y1="0" y2=".35"><stop offset="0" stop-color="#496b46" stop-opacity=".2"/><stop offset=".5" stop-color="#e9e2c8" stop-opacity=".1"/><stop offset="1" stop-color="#a8481f" stop-opacity=".16"/></linearGradient>
+            </defs>
+            <g clip-path="url(#sv-ml-clip)">
+              <rect x="8" y="6" width="504" height="198" fill="url(#sv-ml-wash)"/>
+              <g class="sv-contours sv-enter" style="--sv-delay:.5s">
+                <path transform="translate(-100 0)" d="M392 -4C362 58 250 82 254 124S176 178 146 214"/>
+                <path transform="translate(-50 0)" d="M392 -4C362 58 250 82 254 124S176 178 146 214"/>
+                <path transform="translate(50 0)" d="M392 -4C362 58 250 82 254 124S176 178 146 214"/>
+                <path transform="translate(100 0)" d="M392 -4C362 58 250 82 254 124S176 178 146 214"/>
+              </g>
+              <path class="sv-boundary sv-ink" pathLength="1" d="M392 -4C362 58 250 82 254 124S176 178 146 214"/>
+            </g>
+            <rect x="8" y="6" width="504" height="198" rx="6" class="sv-frame"/>
+            <g class="sv-clabels sv-enter" style="--sv-delay:.9s"><text x="280" y="24">0.1</text><text x="330" y="24">0.3</text><text x="382" y="24" class="sv-c50">0.5</text><text x="432" y="24">0.7</text><text x="482" y="24">0.9</text></g>
+            <g class="sv-samples sv-green"><circle cx="38" cy="42" r="6"/><circle cx="84" cy="74" r="5.5"/><circle cx="56" cy="122" r="6"/><circle cx="128" cy="34" r="5.5"/><circle cx="158" cy="92" r="6"/><circle cx="204" cy="52" r="5.5"/><circle cx="100" cy="156" r="5.5"/><circle cx="214" cy="104" r="6"/><circle cx="44" cy="180" r="5.5"/><circle cx="160" cy="140" r="5.5"/><circle cx="252" cy="40" r="6"/><circle cx="296" cy="60" r="5.5"/></g>
+            <g class="sv-samples sv-rust"><rect x="304" y="112" width="11" height="11"/><rect x="348" y="80" width="11" height="11"/><rect x="408" y="44" width="11" height="11"/><rect x="452" y="82" width="11" height="11"/><rect x="400" y="98" width="11" height="11"/><rect x="494" y="176" width="11" height="11"/><rect x="262" y="176" width="11" height="11"/><rect x="440" y="176" width="11" height="11"/><rect x="226" y="188" width="11" height="11"/><rect x="476" y="36" width="11" height="11"/></g>
+            <g class="sv-prediction">
+              <circle class="sv-pulse" cx="330" cy="168" r="15"/>
+              <rect x="324" y="162" width="12" height="12" rx="1" class="sv-new"/>
+              <path d="M342 160L356 150" class="sv-leader"/>
+              <g transform="translate(352 112)"><rect width="156" height="42" rx="5" class="sv-callout"/><text x="12" y="17" class="sv-ct1">new sample</text><text x="12" y="34" class="sv-ct2">class B · p = 0.93</text></g>
+            </g>
+          </svg>
+        </div>
+        <div class="sv-legend"><span><i class="sv-key green"></i>Class A</span><span><i class="sv-key rust square"></i>Class B</span><span><i class="sv-key line"></i>p(B) contours</span></div>
+      </div>
+    </template>
+    <template data-service-viz="1" data-caption="Expand the question, retrieve the best passages, and answer only from them, with a citation for every claim.">
+      <div class="sv-panel sv-rag" role="img" aria-label="Illustrative retrieval pipeline: a question about road resurfacing is expanded with related terms, three passages are scored for relevance, the two above the cut-off are used, and the answer cites both.">
+        <div class="sv-heading"><strong>Answers with a paper trail</strong><span>Illustration</span></div>
+        <div class="sv-stage sv-rag-grid">
+          <div class="sv-rag-left">
+            <div class="sv-q sv-enter" style="--sv-delay:.05s"><span class="sv-small-label">Question</span><p>Which roads should we resurface first?</p>
+              <div class="sv-expand"><span>+ fatigue cracking</span><span>+ rutting</span></div></div>
+            <ol class="sv-hits">
+              <li class="sv-enter" style="--sv-delay:.35s;--s:.91"><b>1</b><span>Pavement survey · §3.2</span><i><em></em></i><code>.91</code></li>
+              <li class="sv-enter" style="--sv-delay:.5s;--s:.86"><b>2</b><span>DOT guideline 4.1</span><i><em></em></i><code>.86</code></li>
+              <li class="sv-enter sv-miss" style="--sv-delay:.65s;--s:.34"><b>3</b><span>Budget memo, Q2</span><i><em></em></i><code>.34</code></li>
+            </ol>
+          </div>
+          <div class="sv-answer sv-enter" style="--sv-delay:.9s"><span class="sv-small-label">Grounded answer</span>
+            <p>Start with segments showing fatigue cracking over 20%<sup>1</sup>, which the guideline ranks first for repair<sup>2</sup>.</p>
+            <span class="sv-answer-foot"><i></i>2 sources cited · 0 unsupported claims</span></div>
+        </div>
+        <div class="sv-legend"><span><i class="sv-key bar"></i>relevance score</span><span><i class="sv-key cut"></i>below cut-off, left out</span></div>
+      </div>
+    </template>
+    <template data-service-viz="2" data-caption="A vision model finds what's in the picture, a language model reads the caption, and the two agree.">
+      <div class="sv-panel sv-vision" role="img" aria-label="Illustrative image and text model: on a vintage postcard, two mountains and a lake are detected with confidence scores, and the postcard's caption is tagged with the matching mountain, lake and place names.">
+        <div class="sv-heading"><strong>Image and text, read together</strong><span>Illustration</span></div>
+        <div class="sv-stage sv-vis-stage">
+          <svg class="sv-photo" viewBox="48 168 1135 470" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            <image href="assets/photos/work-willoughby.webp" width="1200" height="789"/>
+            <rect x="48" y="168" width="1135" height="470" class="sv-dim"/>
+            <g class="sv-box sv-b-mtn sv-enter" style="--sv-delay:.35s"><rect x="262" y="206" width="296" height="160"/><rect x="262" y="206" width="210" height="40" class="sv-tag"/><text x="274" y="235">mountain .96</text></g>
+            <g class="sv-box sv-b-mtn sv-enter" style="--sv-delay:.55s"><rect x="772" y="244" width="190" height="126"/><rect x="752" y="244" width="214" height="40" class="sv-tag"/><text x="762" y="273">mountain .89</text></g>
+            <g class="sv-box sv-b-lake sv-enter" style="--sv-delay:.75s"><rect x="196" y="378" width="500" height="214"/><rect x="196" y="552" width="148" height="40" class="sv-tag"/><text x="208" y="581">lake .98</text></g>
+          </svg>
+          <span class="sv-scan" aria-hidden="true"></span>
+        </div>
+        <p class="sv-caption-nlp"><mark class="sv-e-mtn sv-enter" style="--sv-delay:1s">Mt. Pisgah<b>mountain</b></mark> and <mark class="sv-e-mtn sv-enter" style="--sv-delay:1.1s">Mt. Hor<b>mountain</b></mark>, <mark class="sv-e-lake sv-enter" style="--sv-delay:1.2s">Willoughby Lake<b>lake</b></mark>, <mark class="sv-e-place sv-enter" style="--sv-delay:1.3s">Vermont<b>place</b></mark></p>
+      </div>
+    </template>
+    <template data-service-viz="3" data-caption="Scheduled loads, checks on every run, and a dashboard that's current when your team opens it.">
+      <div class="sv-panel sv-data" role="img" aria-label="Illustrative data pipeline: API, file and event sources flow on a daily schedule into a warehouse where 12 of 12 data checks pass, then into a dashboard with a trend line and two metrics.">
+        <div class="sv-heading"><strong>Many sources, one clear picture</strong><span>Illustration</span></div>
+        <div class="sv-stage">
+          <svg viewBox="0 0 520 200" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+            <g class="sv-stage-labels"><text x="43" y="14">sources</text><text x="260" y="14">clean + check</text><text x="446" y="14">dashboard</text></g>
+            <g class="sv-data-streams"><path d="M82 52C170 52 138 106 220 106"/><path d="M82 106H220"/><path d="M82 160C170 160 138 106 220 106"/><path d="M300 106H378"/></g>
+            <g class="sv-packets"><path d="M82 52C170 52 138 106 220 106"/><path d="M82 106H220"/><path d="M82 160C170 160 138 106 220 106"/><path d="M300 106H378"/></g>
+            <g class="sv-source"><rect x="5" y="32" width="77" height="40" rx="5"/><rect x="5" y="86" width="77" height="40" rx="5"/><rect x="5" y="140" width="77" height="40" rx="5"/><text x="43" y="58">API</text><text x="43" y="112">Files</text><text x="43" y="166">Events</text></g>
+            <g class="sv-warehouse sv-enter" style="--sv-delay:.2s"><rect x="220" y="66" width="80" height="80" rx="8"/><path d="M240 90h40M240 106h40M240 122h24"/></g>
+            <g class="sv-chip sv-enter" style="--sv-delay:.5s"><rect x="206" y="156" width="108" height="24" rx="12"/><path class="sv-check" d="m218 168 4 4 7-8"/><text x="236" y="172">checks 12/12</text></g>
+            <g class="sv-chip sv-clock sv-enter" style="--sv-delay:.35s"><rect x="210" y="30" width="100" height="24" rx="12"/><circle cx="224" cy="42" r="6"/><path d="M224 38.5V42l2.5 1.6"/><text x="236" y="46">daily 06:00</text></g>
+            <g class="sv-dashboard">
+              <rect x="378" y="26" width="136" height="164" rx="6"/>
+              <text x="390" y="46" class="sv-k">rows/day</text><text x="390" y="66" class="sv-kv">1.2M</text>
+              <text x="452" y="46" class="sv-k">freshness</text><text x="452" y="66" class="sv-kv">&lt; 1 h</text>
+              <path d="M390 80H502" class="sv-rule"/>
+              <path class="sv-area sv-enter" style="--sv-delay:.9s" d="M390 170L390 150L408 144L426 148L444 132L462 128L480 112L502 104L502 170Z"/>
+              <path class="sv-trend sv-ink" pathLength="1" d="M390 150L408 144L426 148L444 132L462 128L480 112L502 104"/>
+              <circle cx="502" cy="104" r="3.5" class="sv-dot sv-enter" style="--sv-delay:1.4s"/>
+              <path d="M390 170H502" class="sv-rule"/>
+            </g>
+          </svg>
+        </div>
+        <div class="sv-legend"><span><i class="sv-key flow"></i>data in flight</span><span><i class="sv-key green"></i>checked before it lands</span></div>
+      </div>
+    </template>
+    <template data-service-viz="4" data-caption="Report the estimate and the room for doubt, with methods anyone can rerun.">
+      <div class="sv-panel sv-research" role="img" aria-label="Illustrative forest plot of effect sizes with 95% confidence intervals: study 1 is 0.12, from minus 0.14 to 0.38, crossing no effect; study 2 is 0.31, from 0.12 to 0.50; the pooled estimate is 0.24, from 0.09 to 0.39. Example values, not reported results.">
+        <div class="sv-heading"><strong>The result, and the room for doubt</strong><span>Illustration</span></div>
+        <div class="sv-stage">
+          <svg viewBox="0 0 520 200" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+            <g class="sv-grid"><path d="M70 22V160M200 22V160M265 22V160M330 22V160"/></g>
+            <path class="sv-zero" d="M135 18V160"/>
+            <text x="135" y="12" class="sv-zero-t">no effect</text>
+            <g class="sv-rows"><text x="0" y="50">Study 1</text><text x="0" y="96">Study 2</text><text x="0" y="146" class="sv-strong">Pooled</text></g>
+            <g class="sv-ci sv-muted"><path class="sv-ink" pathLength="1" d="M89.5 46H258.5"/><path d="M89.5 40v12M258.5 40v12" class="sv-cap sv-enter" style="--sv-delay:.9s"/><circle cx="174" cy="46" r="6" class="sv-enter" style="--sv-delay:.2s"/></g>
+            <g class="sv-ci sv-good"><path class="sv-ink" pathLength="1" d="M174 92H297.5"/><path d="M174 86v12M297.5 86v12" class="sv-cap sv-enter" style="--sv-delay:.9s"/><circle cx="235.8" cy="92" r="6" class="sv-enter" style="--sv-delay:.35s"/></g>
+            <path class="sv-pooled sv-enter" style="--sv-delay:1.2s" d="M164.3 142L213 133L261.8 142L213 151Z"/>
+            <g class="sv-vals"><text x="516" y="50">0.12 [−0.14, 0.38]</text><text x="516" y="96">0.31 [0.12, 0.50]</text><text x="516" y="146" class="sv-strong">0.24 [0.09, 0.39]</text></g>
+            <path d="M70 164H330" class="sv-axis"/>
+            <g class="sv-ticks"><text x="70" y="180">−0.2</text><text x="135" y="180">0</text><text x="200" y="180">0.2</text><text x="265" y="180">0.4</text><text x="330" y="180">0.6</text></g>
+            <text x="200" y="197" class="sv-axis-t">effect size · 95% CI</text>
+          </svg>
+        </div>
+        <div class="sv-legend"><span><i class="sv-key good"></i>clears zero</span><span><i class="sv-key muted"></i>crosses zero</span><span><i class="sv-key diamond"></i>pooled estimate</span></div>
+      </div>
+    </template>
     <div class="camps-trail">
       <p class="caps ct-label"><i></i>How a trip works<i></i></p>
       <ol class="ct" data-anim="stagger"><li style="--i:0"><span class="cp-tent" aria-hidden="true"><svg viewBox="0 0 40 30"><path d="M2 28 L20 3 L38 28 Z"/><path class="door" d="M20 11 L27 28 H13 Z"/></svg></span><b>camp 01</b><strong>Brief</strong><span class="cp-text">a free 30-minute call about the problem and the data</span></li><li style="--i:1"><span class="cp-tent" aria-hidden="true"><svg viewBox="0 0 40 30"><path d="M2 28 L20 3 L38 28 Z"/><path class="door" d="M20 11 L27 28 H13 Z"/></svg></span><b>camp 02</b><strong>Proposal</strong><span class="cp-text">scope, timeline and a fixed quote, in writing</span></li><li style="--i:2"><span class="cp-tent" aria-hidden="true"><svg viewBox="0 0 40 30"><path d="M2 28 L20 3 L38 28 Z"/><path class="door" d="M20 11 L27 28 H13 Z"/></svg></span><b>camp 03</b><strong>Build</strong><span class="cp-text">weekly updates and a shared repo from day one</span></li><li style="--i:3"><span class="cp-tent" aria-hidden="true"><svg viewBox="0 0 40 30"><path d="M2 28 L20 3 L38 28 Z"/><path class="door" d="M20 11 L27 28 H13 Z"/></svg></span><b>camp 04</b><strong>Handover</strong><span class="cp-text">code, docs and a walkthrough, so it stays yours</span></li></ol>
@@ -422,12 +543,14 @@
           <p class="camp-spec">Specialisation in Data Science</p>
           <p class="camp-school">Symbiosis Institute of Technology</p>
           <p class="camp-text">Four years of computer science with a data science specialisation. Python stopped being homework here and became the first tool I reach for.</p>
-          <p class="camp-label">Summit log</p>
-          <ul class="camp-log">
-            <li>B.Tech research: asteroid hazard classifier on 958K NASA records</li>
-            <li>NYC Airbnb analysis: geospatial EDA over 50,000+ listings</li>
-            <li>Built the foundations: ML, statistics, databases, algorithms</li>
-          </ul>
+          <details class="camp-more">
+            <summary><span class="camp-label">Summit log</span><span class="camp-count">3 entries</span><svg class="camp-chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></summary>
+            <ul class="camp-log">
+              <li>B.Tech research: asteroid hazard classifier on 958K NASA records</li>
+              <li>NYC Airbnb analysis: geospatial EDA over 50,000+ listings</li>
+              <li>Built the foundations: ML, statistics, databases, algorithms</li>
+            </ul>
+          </details>
         </div>
       </article>
       <div class="camp-route" aria-hidden="true">
@@ -443,12 +566,14 @@
           <p class="camp-spec">4.0 / 4.0 GPA · graduate TA</p>
           <p class="camp-school">University of British Columbia</p>
           <p class="camp-text">A year of intensive data science: unsupervised learning, NLP, Bayesian statistics and the engineering it takes to ship models, not just train them.</p>
-          <p class="camp-label">Summit log</p>
-          <ul class="camp-log">
-            <li>Built the Reddit UBC Reporter at UBC CIC's Fall 2025 GenAI hackathon</li>
-            <li>Built DisasterDash, a Shiny dashboard over EM-DAT, for DSCI 532</li>
-            <li>Reimplemented MMST-ViT, a vision transformer for crop yield</li>
-          </ul>
+          <details class="camp-more">
+            <summary><span class="camp-label">Summit log</span><span class="camp-count">3 entries</span><svg class="camp-chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></summary>
+            <ul class="camp-log">
+              <li>Built the Reddit UBC Reporter at UBC CIC's Fall 2025 GenAI hackathon</li>
+              <li>Built DisasterDash, a Shiny dashboard over EM-DAT, for DSCI 532</li>
+              <li>Reimplemented MMST-ViT, a vision transformer for crop yield</li>
+            </ul>
+          </details>
         </div>
       </article>
     </div>

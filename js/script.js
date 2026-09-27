@@ -411,13 +411,14 @@
     });
     var out = picked.sort(function (a, b) { return a.x - b.x; }).map(function (q, n) {
       var b = q.box, c = q.c, tx = b[0] + 9;
-      return '<g style="--d:' + f(2.1 + n * 0.14) + 's">' +
+      // each chip is a way into the About section (the nav's About link is the keyboard route)
+      return '<a class="ds-link" href="#about" tabindex="-1"><title>More about me</title><g style="--d:' + f(2.1 + n * 0.14) + 's">' +
         (q.side ? '<line class="lead" x1="' + f(q.side > 0 ? b[0] : b[2]) + '" y1="' + f(q.y) + '" x2="' + f(q.x + q.side * 5) + '" y2="' + f(q.y) + '"/>'
                 : '<line class="lead" x1="' + f(q.x) + '" y1="' + f(b[3]) + '" x2="' + f(q.x) + '" y2="' + f(q.y - 5) + '"/>') +
         '<rect class="chip" x="' + f(b[0]) + '" y="' + f(b[1]) + '" width="' + f(b[2] - b[0]) + '" height="' + f(b[3] - b[1]) + '" rx="4"/>' +
         '<text class="code" x="' + f(tx) + '" y="' + f(b[1] + 14) + '"><tspan class="fn' + (c.key ? " key" : "") + '">' + c.fn + '</tspan><tspan class="arg">' + c.arg + "</tspan></text>" +
         '<text class="code cm" x="' + f(tx) + '" y="' + f(b[1] + 27) + '"># ' + c.cm + "</text>" +
-        '<circle class="pt' + (c.key ? " key" : "") + '" cx="' + f(q.x) + '" cy="' + f(q.y) + '" r="4"/><circle class="pt-core" cx="' + f(q.x) + '" cy="' + f(q.y) + '" r="1.3"/></g>';
+        '<circle class="pt' + (c.key ? " key" : "") + '" cx="' + f(q.x) + '" cy="' + f(q.y) + '" r="4"/><circle class="pt-core" cx="' + f(q.x) + '" cy="' + f(q.y) + '" r="1.3"/></g></a>';
     });
     // gradient descent: shrinking steps from the neighbouring peak down into the minimum it converges to
     var gdPick = picked.filter(function (q) { return q.c.gd; })[0];
@@ -949,7 +950,7 @@
   var STOP_X = [300, 510, 720, 930, 1140];
   function lengthAtX(path, total, x) {
     var lo = 0, hi = total;
-    for (var k = 0; k < 30; k++) { var mid = (lo + hi) / 2; if (path.getPointAtLength(mid).x < x) lo = mid; else hi = mid; }
+    for (var k = 0; k < 18; k++) { var mid = (lo + hi) / 2; if (path.getPointAtLength(mid).x < x) lo = mid; else hi = mid; }
     return (lo + hi) / 2;
   }
   if (topoHost) buildTopo();
@@ -1021,31 +1022,27 @@
     if (cv) paintContours(cv, topo, "--topo-ink", 0, 0);
   }
   // marching squares over the warped terrain, sized to `host`; ox/oy shift the terrain so each map is its own place
-  // page: when given (the host's top in page pixels), terrain, grid and levels are pinned to the page, so neighbouring sheets join seamlessly
+  // page: when given (the host's top in page pixels), terrain, grid and levels are pinned to the page, so neighbouring sheets join seamlessly.
+  // The work is cut into slices of a few milliseconds that run in idle moments, drawn on a spare canvas and swapped in
+  // whole, so no paint ever holds up a scroll, a tap or a frame; a newer paint of the same canvas cancels an older one.
+  // a declaration, not a var: the experience map paints before this part of the script has run
+  function idleSlice(fn) {
+    if (window.requestIdleCallback) window.requestIdleCallback(fn, { timeout: 900 });
+    else setTimeout(function () { fn(null); }, 24);
+  }
   function paintContours(cv, host, inkVar, ox, oy, page) {
     var box = host.getBoundingClientRect(), W = Math.ceil(box.width), H = Math.ceil(box.height);
-    var dpr = Math.min(window.devicePixelRatio || 1, window.innerWidth < 760 ? 1.5 : 2), ctx = cv.getContext("2d");
-    cv.width = W * dpr; cv.height = H * dpr; cv.style.width = W + "px"; cv.style.height = H + "px";
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (!W || !H) return;
+    var dpr = Math.min(window.devicePixelRatio || 1, window.innerWidth < 760 ? 1.5 : 2);
     var css = getComputedStyle(host), ink = css.getPropertyValue(inkVar).trim() || "#1a1d1a";
+    var job = cv._job = {}, off = document.createElement("canvas"), ctx = off.getContext("2d");
+    off.width = W * dpr; off.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     var C = 6, cols = Math.ceil(W / C) + 1, rows = Math.ceil(H / C) + 1, S = 1 / 230;  // S: terrain features per px
-    var field = new Float32Array(cols * rows), lo = 9, hi = -9;
-    for (var j = 0; j < rows; j++) for (var i = 0; i < cols; i++) {
-      var v = terrain(i * C * S + ox, j * C * S + oy + (page != null ? page * S : 0)); field[j * cols + i] = v;
-      if (v < lo) lo = v; if (v > hi) hi = v;
-    }
-    // survey grid
-    ctx.save(); ctx.strokeStyle = ink; ctx.globalAlpha = 0.35; ctx.lineWidth = 1; ctx.setLineDash([5, 5]);
-    var g = 128;
-    if (page != null) { lo = 0.12; hi = 0.88; }
-    for (var gx = g; gx < W; gx += g) { ctx.beginPath(); ctx.moveTo(gx + 0.5, 0); ctx.lineTo(gx + 0.5, H); ctx.stroke(); }
-    for (var gy = page != null ? g - (page % g) : g; gy < H; gy += g) { ctx.beginPath(); ctx.moveTo(0, gy + 0.5); ctx.lineTo(W, gy + 0.5); ctx.stroke(); }
-    ctx.restore();
-
-    ctx.strokeStyle = ink; ctx.lineCap = "round"; ctx.lineJoin = "round";
-    var LEVELS = page != null ? 52 : 34;
-    for (var L = 1; L < LEVELS; L++) {
+    var field = new Float32Array(cols * rows), lo = 9, hi = -9, shift = page != null ? page * S : 0;
+    var LEVELS = page != null ? 52 : 34, row = 0, L = 1, gridDone = false;
+    var seg = function (p, q) { ctx.moveTo(p[0], p[1]); ctx.lineTo(q[0], q[1]); };
+    function level(L) {
       var iso = lo + (hi - lo) * L / LEVELS;
       ctx.beginPath();
       for (var y = 0; y < rows - 1; y++) for (var x = 0; x < cols - 1; x++) {
@@ -1056,7 +1053,6 @@
         var px = x * C, py = y * C;
         var T = [px + C * (iso - a) / (bb - a), py], R = [px + C, py + C * (iso - bb) / (c - bb)];
         var B = [px + C * (iso - d) / (c - d), py + C], Lf = [px, py + C * (iso - a) / (d - a)];
-        var seg = function (p, q) { ctx.moveTo(p[0], p[1]); ctx.lineTo(q[0], q[1]); };
         switch (code) {
           case 1: case 14: seg(Lf, B); break;
           case 2: case 13: seg(B, R); break;
@@ -1069,11 +1065,33 @@
         }
       }
       // one weight and one brightness for every line
-      ctx.globalAlpha = 0.5;
-      ctx.lineWidth = 1;
-      ctx.stroke();
+      ctx.globalAlpha = 0.5; ctx.lineWidth = 1; ctx.stroke();
     }
-    ctx.globalAlpha = 1;
+    function grid() {   // the survey grid, under the contours
+      if (page != null) { lo = 0.12; hi = 0.88; }
+      ctx.save(); ctx.strokeStyle = ink; ctx.globalAlpha = 0.35; ctx.lineWidth = 1; ctx.setLineDash([5, 5]);
+      var g = 128;
+      for (var gx = g; gx < W; gx += g) { ctx.beginPath(); ctx.moveTo(gx + 0.5, 0); ctx.lineTo(gx + 0.5, H); ctx.stroke(); }
+      for (var gy = page != null ? g - (page % g) : g; gy < H; gy += g) { ctx.beginPath(); ctx.moveTo(0, gy + 0.5); ctx.lineTo(W, gy + 0.5); ctx.stroke(); }
+      ctx.restore();
+      ctx.strokeStyle = ink; ctx.lineCap = "round"; ctx.lineJoin = "round";
+    }
+    function work(dl) {
+      if (cv._job !== job) return;                       // superseded by a newer paint
+      var budget = dl && dl.timeRemaining ? Math.max(4, Math.min(10, dl.timeRemaining())) : 8, until = performance.now() + budget;
+      for (; row < rows && performance.now() < until; row++) for (var i = 0; i < cols; i++) {
+        var v = terrain(i * C * S + ox, row * C * S + oy + shift); field[row * cols + i] = v;
+        if (v < lo) lo = v; if (v > hi) hi = v;
+      }
+      if (row < rows) return idleSlice(work);
+      if (!gridDone) { grid(); gridDone = true; }
+      for (; L < LEVELS && performance.now() < until; L++) level(L);
+      if (L < LEVELS) return idleSlice(work);
+      ctx.globalAlpha = 1;
+      cv.width = off.width; cv.height = off.height; cv.style.width = W + "px"; cv.style.height = H + "px";
+      cv.getContext("2d").drawImage(off, 0, 0);
+    }
+    idleSlice(work);
   }
   window.addEventListener("resize", function () { clearTimeout(contourTimer); contourTimer = setTimeout(drawContours, 200); });
   new MutationObserver(function () { drawContours(); }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
@@ -1209,34 +1227,24 @@
     if (!el || id === "top") return;
     e.preventDefault();
     var bar = 84, vh = window.innerHeight, r = el.getBoundingClientRect(), top = r.top + window.scrollY;
-    var y = top + r.height / 2 - (vh + bar) / 2;
+    // centred when the section fits under the nav, else its top lands just under the nav
+    var y = r.height <= vh - bar ? top + r.height / 2 - (vh + bar) / 2 : top - bar;
     window.scrollTo({ top: Math.max(0, y), behavior: reduceMotion ? "auto" : "smooth" });
     if (history.replaceState) history.replaceState(null, "", "#" + id);
     try { el.focus({ preventScroll: true }); } catch (err) {}
   });
 
-  /* ── about: type the hello world softly when it comes into view, then pencil in its output ── */
+  /* ── education: the two summit logs open and close together, so the base camps stay the same height ── */
   (function () {
-    var hw = $("[data-hw]"); if (!hw || reduceMotion) return;
-    (function wrap(node) {
-      Array.prototype.slice.call(node.childNodes).forEach(function (c) {
-        if (c.nodeType !== 3) return wrap(c);
-        var f = document.createDocumentFragment();
-        c.textContent.split("").forEach(function (ch) { var s = document.createElement("span"); s.className = "ch"; s.textContent = ch; f.appendChild(s); });
-        c.parentNode.replaceChild(f, c);
+    var logs = $$(".camp-more"), syncing = false;
+    logs.forEach(function (d) {
+      d.addEventListener("toggle", function () {
+        if (syncing) return;
+        syncing = true;
+        logs.forEach(function (o) { if (o !== d && o.open !== d.open) o.open = d.open; });
+        syncing = false;
       });
-    })($("[data-hw-src]", hw));
-    var chars = $$(".ch", hw);
-    var go = function () {
-      var t = 0;
-      chars.forEach(function (c, i) {
-        t += i < 4 ? 20 : 34 + Math.random() * 30;
-        setTimeout(function () { c.classList.add("on"); }, t);
-      });
-      setTimeout(function () { hw.classList.add("done"); }, t + 350);
-    };
-    if ("IntersectionObserver" in window) new IntersectionObserver(function (es, io) { if (es[0].isIntersecting) { io.disconnect(); setTimeout(go, 250); } }, { threshold: .8 }).observe(hw);
-    else go();
+    });
   })();
 
   /* ── entrance animations: anything marked data-anim gets .in once it scrolls into view ── */
@@ -1272,33 +1280,76 @@
     window.addEventListener("resize", function () { clearTimeout(t); t = setTimeout(paint, 200); });
   })();
 
-  /* ── about: the trail pass. contours in the Experience palette, a tilt with a soft glare, stats that count up ── */
+  /* ── about: type a greeting once, then reveal the handwritten introduction ── */
   (function () {
-    var pass = $(".pass"), card = $("[data-pass]"), cv = $("[data-pass-topo]");
-    if (!pass || !card) return;
-    var paint = function () { if (card.offsetWidth) paintContours(cv, card, "--pass-ink", 6.1, 3.3); }, t;
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(paint); else paint();
-    window.addEventListener("resize", function () { clearTimeout(t); t = setTimeout(paint, 200); });
-    new MutationObserver(paint).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    if (reduceMotion) return;
-    var counted = false;
-    new MutationObserver(function () {
-      if (counted || !pass.classList.contains("in")) return; counted = true;
-      $$("[data-count]", pass).forEach(function (el, i) {
-        var end = +el.getAttribute("data-count"), t0 = 0;
-        setTimeout(function () {
-          (function tick(ts) { t0 = t0 || ts; var p = Math.min(1, (ts - t0) / 1100); el.textContent = Math.round(end * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(tick); })(performance.now());
-        }, 900 + i * 120);
+    var hello = $("[data-hw]"), source = hello && $("[data-hw-src]", hello), replay = hello && $("[data-hw-replay]", hello);
+    if (!hello || !source || reduceMotion) return;
+    function wrap(node) {
+      Array.prototype.slice.call(node.childNodes).forEach(function (child) {
+        if (child.nodeType !== 3) { wrap(child); return; }
+        var fragment = document.createDocumentFragment();
+        Array.from(child.textContent).forEach(function (character) {
+          var span = document.createElement("span"); span.className = "ch"; span.textContent = character; fragment.appendChild(span);
+        });
+        child.parentNode.replaceChild(fragment, child);
       });
-    }).observe(pass, { attributes: true, attributeFilter: ["class"] });
-    if (!canHover) return;
-    card.addEventListener("pointermove", function (e) {
-      var r = card.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
-      card.classList.add("tracking");
-      card.style.setProperty("--ry", f((x - .5) * 10) + "deg"); card.style.setProperty("--rx", f((.5 - y) * 7) + "deg");
-      card.style.setProperty("--mx", f(x * 100) / 100); card.style.setProperty("--my", f(y * 100) / 100);
+    }
+    wrap(source);
+    var chars = $$(".ch", source), timers = [], running = false;
+    function later(callback, delay) { timers.push(setTimeout(callback, delay)); }
+    function play() {
+      if (running) return;
+      running = true; timers.forEach(clearTimeout); timers = [];
+      // Move focus out of the replay control before it is hidden for the animation.
+      if (document.activeElement === replay) { hello.setAttribute("tabindex", "-1"); hello.focus({ preventScroll: true }); }
+      hello.classList.add("resetting", "ready"); hello.classList.remove("done", "typing");
+      chars.forEach(function (character) { character.classList.remove("on"); });
+      void hello.offsetWidth;
+      hello.classList.remove("resetting"); hello.classList.add("typing");
+      var delay = 100;
+      chars.forEach(function (character, i) {
+        delay += i < 4 ? 22 : 38;
+        later(function () { character.classList.add("on"); }, delay);
+      });
+      later(function () { hello.classList.remove("typing"); hello.classList.add("done"); }, delay + 180);
+      later(function () { running = false; }, delay + 1400);
+    }
+    replay.addEventListener("click", play);
+    if ("IntersectionObserver" in window) {
+      var observer = new IntersectionObserver(function (entries) {
+        if (!entries[0].isIntersecting) return;
+        observer.disconnect(); play();
+      }, { threshold: .5 });
+      observer.observe(hello);
+    } else play();
+  })();
+
+  /* ── annual trail pass: survey contours, a quiet sheen, and the original park emblem ── */
+  (function () {
+    var pass = $(".pass"), card = $("[data-pass]"), canvas = $("[data-pass-topo]");
+    if (!pass || !card || !canvas) return;
+    var timer, frame = 0, x = .5, y = .5;
+    function paint() { if (card.offsetWidth) paintContours(canvas, card, "--pass-ink", 6.1, 3.3); }
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(paint); else paint();
+    window.addEventListener("resize", function () { clearTimeout(timer); timer = setTimeout(paint, 200); });
+    new MutationObserver(paint).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    if (reduceMotion || !canHover) return;
+    pass.addEventListener("pointermove", function (event) {
+      if (event.pointerType === "touch") return;
+      var bounds = pass.getBoundingClientRect();
+      x = clamp((event.clientX - bounds.left) / bounds.width, 0, 1); y = clamp((event.clientY - bounds.top) / bounds.height, 0, 1);
+      if (frame) return;
+      frame = requestAnimationFrame(function () {
+        frame = 0; card.classList.add("tracking");
+        card.style.setProperty("--ry", f((x - .5) * 6) + "deg"); card.style.setProperty("--rx", f((.5 - y) * 5) + "deg");
+        card.style.setProperty("--mx", x); card.style.setProperty("--my", y);
+      });
     });
-    card.addEventListener("pointerleave", function () { card.classList.remove("tracking"); ["--rx", "--ry"].forEach(function (k) { card.style.removeProperty(k); }); });
+    function reset() {
+      cancelAnimationFrame(frame); frame = 0; card.classList.remove("tracking");
+      ["--rx", "--ry"].forEach(function (key) { card.style.removeProperty(key); });
+    }
+    pass.addEventListener("pointerleave", reset); pass.addEventListener("pointercancel", reset);
   })();
 
   /* ── cream sections: faint contours, painted only once each section nears the screen ── */
@@ -1320,6 +1371,18 @@
     var t, repaintVisible = function () { queue(els.filter(function (el) { return el._painted; })); };
     window.addEventListener("resize", function () { clearTimeout(t); t = setTimeout(repaintVisible, 250); });
     new MutationObserver(repaintVisible).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    // a section that grows or shrinks (a summit log opening, say) gets its contours redrawn once it settles
+    if ("ResizeObserver" in window) {
+      var rt, grown = [];
+      var ro = new ResizeObserver(function (es) {
+        es.forEach(function (e) {
+          var el = e.target, key = el.offsetWidth + "x" + el.offsetHeight + document.documentElement.getAttribute("data-theme");
+          if (el._painted && el._painted !== key && grown.indexOf(el) < 0) grown.push(el);
+        });
+        clearTimeout(rt); rt = setTimeout(function () { var list = grown; grown = []; queue(list); }, 260);
+      });
+      els.forEach(function (el) { ro.observe(el); });
+    }
   })();
 
   /* ── toolkit: faint contours on the forest band, drawn at idle ── */
@@ -1344,7 +1407,7 @@
     new MutationObserver(paint).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
   })();
 
-  /* ── services: the signpost boards pick a route; the card redraws its profile ── */
+  /* ── services: the signpost boards pick a service and its own visualization ── */
   (function () {
     var th = $("[data-trailhead]"), card = $("[data-route-card]"), boards = $$("[data-route]");
     var ROUTES = [];
@@ -1352,31 +1415,12 @@
     if (!th || !card || !ROUTES.length) return;
     var BLAZE = { circle: '<circle cx="12" cy="12" r="8"/>', triangle: '<path d="M12 4l8.5 15h-17z"/>', square: '<rect x="5" y="5" width="14" height="14" rx="1"/>',
       diamond: '<path d="M12 3l9 9-9 9-9-9z"/>', hexagon: '<path d="M12 3l7.8 4.5v9L12 21l-7.8-4.5v-9z"/>' };
-    var fig = $(".rc-prof", card), prof = $("[data-rc-prof]", card), cur = -1;
-    // an uphill route: each stage of the work sits a little higher, with a ridge line of rough ground between them
-    function profile(i) {
-      var R = ROUTES[i], r = rng(900 + i * 37), W = 640, H = 170, n = R.pts.length, pts = [], wps = [];
-      var stageX = function (k) { return 36 + k * (W - 72) / (n - 1); };
-      var stageY = function (k) { return 152 - k * (96 / (n - 1)) - (k === n - 1 ? 8 : (r() - .5) * 14); };
-      var ys = []; for (var k = 0; k < n; k++) ys.push(stageY(k));
-      for (var x = 0; x <= W; x += 8) {
-        var seg = Math.min(n - 2, Math.max(0, Math.floor((x - 36) / ((W - 72) / (n - 1))))), t = Math.max(0, Math.min(1, (x - stageX(seg)) / (stageX(seg + 1) - stageX(seg))));
-        var e = (1 - Math.cos(t * Math.PI)) / 2, y = ys[seg] * (1 - e) + ys[seg + 1] * e - Math.sin(t * Math.PI) * (6 + r() * 10) + (r() - .5) * 5;
-        if (x < 36) y = ys[0] + (36 - x) * .15; if (x > W - 36) y = ys[n - 1] - (x - (W - 36)) * .08;
-        pts.push([x, y]);
-      }
-      var line = "M" + pts.map(function (p) { return f(p[0]) + " " + f(p[1]); }).join("L");
-      var s = '<defs><pattern id="rc-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><rect width="6" height="6" fill="#e9dfc2"/><path d="M0 0v6" stroke="#cdbd93" stroke-width="1.4"/></pattern></defs>' +
-        '<path class="land" d="' + line + "L" + W + " " + H + "L0 " + H + 'Z"/><path class="ridge" d="' + line + '"/>' +
-        '<path class="trail" d="' + pts.map(function (p, q) { return (q ? "L" : "M") + f(p[0]) + " " + f(p[1] - 10); }).join("") + '"/>';
-      for (k = 0; k < n; k++) {
-        var wx = stageX(k), wy = ys[k] - 10;
-        s += '<g class="wp' + (k === n - 1 ? " end" : "") + '" style="--i:' + k + '"><line x1="' + f(wx) + '" y1="' + f(wy - 36) + '" x2="' + f(wx) + '" y2="' + f(wy - 7) + '"/><circle cx="' + f(wx) + '" cy="' + f(wy) + '" r="5.5"/></g>';
-        wps.push('<span class="wp-lb" style="--i:' + k + ";left:" + f(wx / W * 100) + "%;--y:" + f(wy - 36) + '"><i>' + (k + 1) + "</i>" + R.pts[k] + "</span>");
-      }
-      prof.innerHTML = s;
-      $$(".wp-lb", fig).forEach(function (el) { el.remove(); });
-      fig.insertAdjacentHTML("beforeend", wps.join(""));
+    var visual = $("[data-rc-viz]", card), caption = $("[data-rc-caption]", card), cur = -1, swapTimer = 0;
+    function visualize(i) {
+      var template = $('[data-service-viz="' + i + '"]', th.parentElement);
+      if (!template) return;
+      visual.replaceChildren(template.content.cloneNode(true));
+      caption.textContent = template.getAttribute("data-caption");
     }
     function fill(i) {
       var R = ROUTES[i];
@@ -1388,15 +1432,16 @@
       $("[data-rc-stack]", card).textContent = R.stack;
       $("[data-rc-best]", card).textContent = R.best;
       card.setAttribute("aria-labelledby", boards[i].id);
-      profile(i);
+      visualize(i);
     }
     function pick(i, instant) {
       if (i === cur) return;
+      clearTimeout(swapTimer);
       cur = i;
       boards.forEach(function (b, k) { b.classList.toggle("on", k === i); b.setAttribute("aria-selected", k === i ? "true" : "false"); b.tabIndex = k === i ? 0 : -1; });
-      if (instant || reduceMotion) { fill(i); card.classList.remove("draw"); void card.offsetWidth; card.classList.add("draw"); return; }
+      if (instant || reduceMotion) { fill(i); card.classList.remove("swap", "draw"); void card.offsetWidth; card.classList.add("draw"); return; }
       card.classList.add("swap");
-      setTimeout(function () { fill(i); card.classList.remove("swap", "draw"); void card.offsetWidth; card.classList.add("draw"); }, 230);
+      swapTimer = setTimeout(function () { fill(i); card.classList.remove("swap", "draw"); void card.offsetWidth; card.classList.add("draw"); }, 230);
     }
     boards.forEach(function (b, k) {
       b.addEventListener("click", function () { pick(k); });
@@ -1408,6 +1453,21 @@
       });
     });
     pick(0, true);
+    // the card keeps the height of its tallest route, so picking another one never moves the page
+    var body = $(".rc-body", card), settleTimer = 0;
+    function settle() {
+      if (!body) return;
+      body.style.minHeight = "";
+      if (matchMedia("(max-width: 900px)").matches) return;   // stacked on small screens: let it size to the route
+      var tallest = 0;
+      ROUTES.forEach(function (r, k) { fill(k); tallest = Math.max(tallest, body.offsetHeight); });
+      fill(cur);
+      body.style.minHeight = tallest + "px";
+    }
+    var later = window.requestIdleCallback || function (fn) { return setTimeout(fn, 200); };
+    later(settle, { timeout: 2500 });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { later(settle, { timeout: 2500 }); });
+    window.addEventListener("resize", function () { clearTimeout(settleTimer); settleTimer = setTimeout(settle, 150); });
     var ct = $(".camps-trail");
     if (ct && "IntersectionObserver" in window) new IntersectionObserver(function (es, io) { if (es[0].isIntersecting) { ct.classList.add("in"); io.disconnect(); } }, { threshold: .4 }).observe(ct);
   })();
@@ -1488,10 +1548,22 @@
       var LV = 26, step = 2 / (N - 1); g.levels = [];
       for (var L = 0; L < LV; L++) {
         var iso = .015 + L / LV * .985, fill = new Path2D(), stroke = new Path2D();
-        for (var j = 0; j < N - 1; j++) for (var i = 0; i < N - 1; i++) {
-          var k0 = j * N + i, c = [F[k0], F[k0 + 1], F[k0 + N + 1], F[k0 + N]];
-          if (!((c[0] > iso) + (c[1] > iso) + (c[2] > iso) + (c[3] > iso))) continue;
-          var u0 = -1 + i * step, v0 = -1 + j * step, corner = [[u0, v0], [u0 + step, v0], [u0 + step, v0 + step], [u0, v0 + step]], poly = [], cross = [];
+        // cells wholly inside the level join into one strip per row (the projection is affine, so a strip is
+        // exactly a parallelogram); only the cells the contour crosses are cut one by one
+        var strip = function (i0, i1, j) {
+          var ua = -1 + i0 * step, ub = -1 + i1 * step, va = -1 + j * step, vb = va + step;
+          var p1 = P(ua, va, iso), p2 = P(ub, va, iso), p3 = P(ub, vb, iso), p4 = P(ua, vb, iso);
+          fill.moveTo(p1[0], p1[1]); fill.lineTo(p2[0], p2[1]); fill.lineTo(p3[0], p3[1]); fill.lineTo(p4[0], p4[1]); fill.closePath();
+        };
+        for (var j = 0; j < N - 1; j++) {
+          var run = -1;
+          for (var i = 0; i < N - 1; i++) {
+            var k0 = j * N + i, fa = F[k0] > iso, fb = F[k0 + 1] > iso, fc = F[k0 + N + 1] > iso, fd = F[k0 + N] > iso;
+            if (fa && fb && fc && fd) { if (run < 0) run = i; continue; }
+            if (run >= 0) { strip(run, i, j); run = -1; }
+            if (!(fa || fb || fc || fd)) continue;
+            var c = [F[k0], F[k0 + 1], F[k0 + N + 1], F[k0 + N]];
+            var u0 = -1 + i * step, v0 = -1 + j * step, corner = [[u0, v0], [u0 + step, v0], [u0 + step, v0 + step], [u0, v0 + step]], poly = [], cross = [];
           for (var q = 0; q < 4; q++) {
             var n2 = (q + 1) % 4;
             if (c[q] > iso) poly.push(corner[q]);
@@ -1501,6 +1573,8 @@
           for (var z = 1; z < poly.length; z++) { var pz = P(poly[z][0], poly[z][1], iso); fill.lineTo(pz[0], pz[1]); }
           fill.closePath();
           for (var w = 0; w + 1 < cross.length; w += 2) { var a1 = P(cross[w][0], cross[w][1], iso), b1 = P(cross[w + 1][0], cross[w + 1][1], iso); stroke.moveTo(a1[0], a1[1]); stroke.lineTo(b1[0], b1[1]); }
+          }
+          if (run >= 0) strip(run, N - 1, j);
         }
         g.levels.push({ fill: fill, stroke: stroke, a: .6 + .4 * L / LV });
       }
@@ -1560,7 +1634,9 @@
     function play() {
       if (played) return; played = true;
       if (reduceMotion) { paintAll(); return; }
-      G = geometry(); var ctx = setup(G), g = G, pins = $$(".rt-pin", pinHost);
+      var fresh = G && G.pre && G.W === Math.round(stage.clientWidth) && G.H === Math.round(stage.clientHeight);
+      if (!fresh) G = geometry();
+      var ctx = setup(G), g = G, pins = $$(".rt-pin", pinHost);
       var base = document.createElement("canvas"); base.width = cv.width; base.height = cv.height; var bctx = base.getContext("2d"); bctx.setTransform(g.dpr, 0, 0, g.dpr, 0, 0);
       var T0 = performance.now(), RING = 700, RISE = 1900, WALK = 2600, drawnL = 0, D = 0;
       (function frame(now) {
@@ -1582,7 +1658,14 @@
     }
     var t0;
     var start = function () {
-      if ("IntersectionObserver" in window) new IntersectionObserver(function (es, io) { if (es[0].isIntersecting) { io.disconnect(); play(); } }, { threshold: .35 }).observe(stage);
+      if ("IntersectionObserver" in window) {
+        new IntersectionObserver(function (es, io) {
+          if (!es[0].isIntersecting) return;
+          io.disconnect();
+          (window.requestIdleCallback || setTimeout)(function () { if (!played) { G = geometry(); G.pre = true; } }, { timeout: 1200 });
+        }, { rootMargin: "1400px 0px" }).observe(stage);
+        new IntersectionObserver(function (es, io) { if (es[0].isIntersecting) { io.disconnect(); play(); } }, { threshold: .35 }).observe(stage);
+      }
       else paintAll();
     };
     if (document.readyState === "complete") start(); else window.addEventListener("load", start, { once: true });
@@ -1729,10 +1812,15 @@
   }
 
   /* ── one scroll loop for everything ────────────────────── */
-  var ticking = false, progress = $("[data-progress]");
+  var ticking = false, progress = $("[data-progress]"), docH = 0;
+  var measureDoc = function () { docH = document.documentElement.scrollHeight; };
+  measureDoc();
+  if ("ResizeObserver" in window) new ResizeObserver(measureDoc).observe(document.body);
   function requestTick() { if (!ticking) { ticking = true; requestAnimationFrame(frame); } }
   function frame() {
     ticking = false;
+    // reads (the nav's section check included) before any style is written, so a frame never forces a layout
+    updateBar();
     var y = window.scrollY, vh = window.innerHeight;
     // hero parallax
     if (y < vh * 1.3 && !reduceMotion) {
@@ -1742,8 +1830,7 @@
       });
     }
     updateSigns();
-    updateBar();
-    if (progress) progress.style.transform = "scaleX(" + Math.min(1, y / Math.max(1, document.documentElement.scrollHeight - vh)).toFixed(4) + ")";
+    if (progress) progress.style.transform = "scaleX(" + Math.min(1, y / Math.max(1, docH - vh)).toFixed(4) + ")";
   }
   window.addEventListener("scroll", requestTick, { passive: true });
   window.addEventListener("resize", function () { measure(); placeStops(); requestTick(); });
