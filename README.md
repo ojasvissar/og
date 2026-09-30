@@ -15,6 +15,7 @@ Plain HTML, CSS and JavaScript, no build step.
 index.html          the main page
 blog.html           field notes (blog)
 resume.html         résumé viewer (PDF on a contour map)
+info/index.html     contact card (the /info page)
 css/style.css       all styles, day and night
 js/script.js        interactions and generated scenery (maps, contours, diary, footer)
 assets/

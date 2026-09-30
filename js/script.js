@@ -228,10 +228,6 @@
       Cal.ns[NS]("ui", { theme: theme(), hideEventTypeDetails: false, layout: "month_view",
         cssVarsPerTheme: { dark: { "cal-brand": "#d9a932" } } });
     }
-    // warm it up early: in the background once the page has settled, straight away if someone heads for the contact section,
-    // and as a last resort when it nears the viewport
-    var idle = window.requestIdleCallback || function (fn) { return setTimeout(fn, 1200); };
-    var soon = function () { idle(load, { timeout: 3000 }); };
     // load it in a quiet moment: some seconds after the page settles AND once the reader has stopped scrolling,
     // so its heavy frame never lands mid-scroll. hovering or clicking a contact link loads it at once.
     var lastScroll = Date.now(), armed = false;

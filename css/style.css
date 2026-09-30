@@ -1516,10 +1516,6 @@ html:not(.js) .camp, .camps.in .camp { transform: none; opacity: 1; }
 .fn-text li::before { content: ""; position: absolute; left: 4px; top: 17px; width: 8px; height: 8px; border: 2px solid #ff5b04; transform: rotate(45deg); }
 .fn-text .tags { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 8px; }
 .fn-text .tags span { padding: 4px 11px 2px; border: 1.5px solid #232b1c; border-radius: 999px; font-weight: 700; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; }
-.fn-text .cta-row { margin-top: 18px; display: flex; gap: 10px; flex-wrap: wrap; }
-.note-btn { display: inline-block; padding: 10px 18px 8px; border-radius: 6px; background: #232b1c; color: #fffdf6; font-weight: 700; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; transition: transform .3s cubic-bezier(.34, 1.45, .64, 1); }
-.note-btn.ghost { background: transparent; color: #232b1c; box-shadow: inset 0 0 0 1.5px #232b1c; }
-.note-btn:hover { transform: translateY(-2px); }
 .fn-foot { display: flex; justify-content: space-between; gap: 10px; padding: 18px 28px 24px; }
 .fn-nav { font-weight: 700; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: #232b1c; padding: 8px 0; border-bottom: 1.5px solid transparent; transition: border-color .2s; }
 .fn-nav:hover { border-color: #ff5b04; }
@@ -1606,7 +1602,7 @@ html.intro-on .pill, html.intro-on .pill *, html.intro-on .brand-mark, html.intr
   .hello-tag { font-size: 13px; }
 }
 
-/* ── writing: the paper and the blog, side by side ── */
+/* ── writing: the paper, with a link out to the blog ── */
 /* writing sits on its own survey sheet: canyon clay with sand contours */
 .writing { position: relative; z-index: 2; isolation: isolate; overflow: hidden; padding: calc(var(--tear-h) + 40px) clamp(20px, 5vw, 80px) calc(var(--tear-h) + 40px); background: #5b2f1f; --wr-ink: #e9c89a; }
 :root[data-theme="night"] .writing { background: #2e1810; --wr-ink: #b88a5c; }
@@ -1614,8 +1610,6 @@ html.intro-on .pill, html.intro-on .pill *, html.intro-on .brand-mark, html.intr
 .writing::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: radial-gradient(ellipse 60% 55% at 50% 45%, rgba(242, 193, 92, .1), transparent 70%); }
 .writing .wr-head .caps { color: var(--gold); }
 .writing .wr-head h2 { color: #f6ebd4; text-shadow: 0 2px 16px rgba(0, 0, 0, .25); }
-.writing .pub, .writing .post { box-shadow: 0 1px 1px rgba(0, 0, 0, .15), 0 26px 40px -24px rgba(0, 0, 0, .7); }
-.writing .pub { border-left-color: #a8481f; }
 /* the postcard section below rips out of the clay: the clay is cut along the tear */
 .writing + .book { margin-top: calc(var(--tear-h) * -1); }
 .writing + .book .book-tear-top { --fiber: #7a4630; }
@@ -1623,26 +1617,6 @@ html.intro-on .pill, html.intro-on .pill *, html.intro-on .brand-mark, html.intr
 .wr-head { text-align: center; }
 .wr-head .caps { font-size: 11px; color: var(--rust); }
 .wr-head h2 { display: inline-block; margin-top: 6px; font-size: clamp(32px, 4.2vw, 56px); transform: scaleX(1.06); }
-.wr-grid { max-width: 1100px; margin: 40px auto 0; display: grid; grid-template-columns: 1.35fr 1fr; gap: 24px; align-items: stretch; }
-.pub, .post { position: relative; display: flex; flex-direction: column; padding: 28px 30px 26px; border-radius: 6px; color: #2d3021;
-  box-shadow: 0 1px 1px rgba(60, 50, 30, .12), 0 18px 30px -18px rgba(60, 50, 30, .45); }
-.pub { background: #fbf6e6; border-left: 5px solid #2f4128; }
-.post { background: repeating-linear-gradient(transparent 0 29px, rgba(29, 93, 120, .12) 29px 30px) 0 14px, #fbf6e6; }
-:root[data-theme="night"] .pub, :root[data-theme="night"] .post { background-color: #eee6cf; }
-.wr-kind { display: flex; justify-content: space-between; gap: 10px; font: 700 10px var(--sans); letter-spacing: .2em; text-transform: uppercase; color: #a8481f; }
-.wr-kind span:last-child { color: #7a6a4c; letter-spacing: .14em; }
-.pub-title { margin-top: 12px; font-family: "Zilla Slab", serif; font-weight: 700; font-size: clamp(21px, 2.2vw, 26px); line-height: 1.22; }
-.pub-title a, .post-title a { color: #232b1c; transition: color .2s; }
-.pub-title a:hover, .post-title a:hover { color: #a8481f; }
-.pub-authors { margin-top: 10px; font-size: 14px; line-height: 1.5; color: #4a4838; }
-.pub-authors b { color: #232b1c; }
-.pub-venue { margin-top: 4px; font-size: 13.5px; line-height: 1.5; color: #7a6a4c; }
-.pub-text, .post-text { margin-top: 14px; font-size: 15px; line-height: 1.7; color: #3b3a2e; }
-.post-date { margin-top: 10px; font: 400 13.4px var(--hand); color: #6f6a5a; }
-.post-title { margin-top: 2px; font: 700 clamp(22px, 2.3vw, 27px)/1.2 var(--hand); }
-.post-title a { color: #253049; }
-.wr-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
-.wr-tags i { padding: 3px 10px 2px; border-radius: 999px; border: 1px solid rgba(37, 48, 73, .25); font: 700 10px var(--sans); font-style: normal; letter-spacing: .1em; text-transform: uppercase; color: #3b4258; }
 .wr-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-top: auto; padding-top: 20px; }
 .wr-btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px 8px; border-radius: 6px; border: 1.5px solid #1d2619; background: #1d2619; color: #f4ecd2;
   font: 700 10.5px var(--sans); letter-spacing: .16em; text-transform: uppercase; cursor: pointer; transition: background-color .2s, color .2s, border-color .2s, transform .25s var(--ease); }
@@ -1650,10 +1624,7 @@ html.intro-on .pill, html.intro-on .pill *, html.intro-on .brand-mark, html.intr
 .wr-btn.ghost { background: transparent; color: #1d2619; }
 .wr-btn.ghost:hover, .wr-btn.ghost:focus-visible { background: #1d2619; color: #f4ecd2; border-color: #1d2619; }
 .wr-btn.ok { background: #2f4128; border-color: #2f4128; color: #f4ecd2; }
-.wr-link { font: 700 13.4px var(--hand); color: #253049; border-bottom: 1px solid currentColor; }
-.wr-link:hover { color: #a8481f; }
-@media (max-width: 860px) { .wr-grid { grid-template-columns: 1fr; max-width: 620px; } }
-@media (max-width: 560px) { .pub, .post { padding: 24px 20px 22px; } .writing { padding-bottom: 110px; } }
+@media (max-width: 560px) { .writing { padding-bottom: 110px; } }
 
 /* faint survey contours behind the cream sections, drawn lazily as each comes into view */
 [data-cream-topo] { position: relative; isolation: isolate; background: var(--cream); --cream-ink: #b9a67a; }
@@ -1705,9 +1676,6 @@ html.intro-on .pill, html.intro-on .pill *, html.intro-on .brand-mark, html.intr
 .js .reg-rows[data-anim="up"] .reg-slip { opacity: 0; translate: 0 26px; transition: opacity .6s ease, translate .8s cubic-bezier(.34, 1.4, .5, 1); }
 .js .reg-rows[data-anim="up"].in .reg-slip { opacity: 1; translate: 0 0; }
 .reg-rows.in .reg-slip:nth-child(2) { transition-delay: .08s; } .reg-rows.in .reg-slip:nth-child(3) { transition-delay: .16s; } .reg-rows.in .reg-slip:nth-child(4) { transition-delay: .24s; } .reg-rows.in .reg-slip:nth-child(5) { transition-delay: .32s; }
-/* publications and toolkit list lift gently on hover */
-.pub, .post { transition: transform .4s var(--ease), box-shadow .4s; }
-.pub:hover, .post:hover { transform: translateY(-5px); box-shadow: 0 1px 1px rgba(0, 0, 0, .15), 0 34px 44px -24px rgba(0, 0, 0, .7); }
 .camp { transition: transform .5s var(--ease), box-shadow .5s; }
 .camps.in .camp:hover { transform: translateY(-6px); }
 /* primary buttons get a sweep of light */
